@@ -1,0 +1,3 @@
+*.env
+.transportVar.js
+/node_modules
