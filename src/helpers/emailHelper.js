@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import {transportVar2 } from "./.transportVar.js";
+
 
 export const transportVar = { // Este es el transport var de mi mailtrap, lo estoy usando de prueba para ver si funca, pueden hacerse uno o avisarme si quieren probar algo y lo vemos
     host: "smtp.mailtrap.io",
@@ -9,7 +9,7 @@ export const transportVar = { // Este es el transport var de mi mailtrap, lo est
     pass: "787ee01ee5f8d7"
     }
   };
-  
+
 const emailTemplateConfirmed = (name, token) => `<!DOCTYPE html>
 <html lang="en">
   <head>
