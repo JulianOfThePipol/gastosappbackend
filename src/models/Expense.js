@@ -14,6 +14,11 @@ const expenseSchema = mongoose.Schema({
             trim: true 
         },
 
+        date: {
+            type: Date,
+            required: true
+        }, // La fecha en la cual ocurrio el gasto. Por ahora el dia nomás, habria que ver si le agregamos
+
         categoryID: {
             type: String,
             required: true,
