@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt"
 
 const userSchema = mongoose.Schema(
     {
@@ -44,6 +45,23 @@ const userSchema = mongoose.Schema(
       timestamps: true // crea 2 columnas, una de creado y otra de actualizado
     }
   );
+
+// este codigo se ejecuta antes de guardar el registro en la db
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    // aca lo que evitamos es que si el usuario quiere modificar su perfil pero no su password, no le hashee de nuevo la contraseña
+    next(); // si no esta modificando el password no ejecuta las lineas 50 y 51
+  }
+  //CUANDO CAMBIO EL PASSWORD VA A IGNORAR LAS FILAS 45 A 48 Y ME VA A HASHEAR EL NUEVO PASSWORD
+  // aca estoy obteniendo la info del objeto User que estoy guardando en el controller
+  //Todavia no decidimos si le vamos a permitir cambiar la contraseña, esta podria ser una forma de verificar si en la página de cambios realizo una modificacion a la contraseña o no
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt); // el this hace referencia al objeto del User
+});
+
+userSchema.methods.checkPassword = async function (passwordForm) {
+  return await bcrypt.compare(passwordForm, this.password);
+};
 
 const User = mongoose.model("User", userSchema);
 export default User;
