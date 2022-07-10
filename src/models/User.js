@@ -50,7 +50,7 @@ const userSchema = mongoose.Schema(
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     // aca lo que evitamos es que si el usuario quiere modificar su perfil pero no su password, no le hashee de nuevo la contraseña
-    next(); // si no esta modificando el password no ejecuta las lineas 50 y 51
+    next(); // si no esta modificando el password no ejecuta las lineas del salt
   }
   //CUANDO CAMBIO EL PASSWORD VA A IGNORAR LAS FILAS 45 A 48 Y ME VA A HASHEAR EL NUEVO PASSWORD
   // aca estoy obteniendo la info del objeto User que estoy guardando en el controller
