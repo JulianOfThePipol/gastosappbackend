@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import { createJWT, createJWTConfirmed } from "../helpers/createJWT.js";
+import { emailForgot, emailToken } from "../helpers/emailhelper.js";
 
 
 //Este controlador crea un nuevo usuario.
@@ -16,8 +17,9 @@ const createNewUser = async (req, res) => {
         const user = new User(req.body)
         user.token = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
         await user.save(); //Aca iria el metodo del mail para el confirmed
+        emailToken(user)
         res.json({
-            msg: "Usuario creado con exito"
+            msg: "Usuario creado con exito, recibirá un email para confirmar su cuenta"
         });
 
     } catch(error) {
