@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-const expenseSchema = mongoose.Schema(
-    {
+const expenseSchema = mongoose.Schema({
+    expenses:[{
         name: {
             type: String,
             required: true, // hace que este campo sea obligatorio
@@ -13,8 +13,20 @@ const expenseSchema = mongoose.Schema(
             required: true,
             trim: true 
         },
-        
-        
+
+        categoryID: {
+            type: String,
+            required: true,
+            ref: "Category"
+        }
+    }],
+
+    userID: {
+        type: String,
+        required: true,
+        ref: "User"
+    }
+
   },
 )
 
