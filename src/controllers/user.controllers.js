@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import { createJWT, createJWTConfirmed } from "../helpers/createJWT.js";
-import { emailForgot, emailToken } from "../helpers/emailhelper.js";
+import { emailForgot, emailToken } from "../helpers/emailHelper.js";
 
 
 //Este controlador crea un nuevo usuario.
