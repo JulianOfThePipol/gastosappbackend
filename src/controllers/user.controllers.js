@@ -106,12 +106,16 @@ const forgotPassword = async (req, res) => {//Para el caso que el user se olvide
 
 const checkForgotToken = async (req, res) => { //Aca checkeamos que el token sea valido, de serlo, ahi se mostraria la view para el cambio de contraseña
     const { token } = req.params;
+    try {
+        jwt.verify(token, process.env.JWT_SECRET)
+    } catch(err) {
+        return res.status(400).json({ msg: "Su token es invalido o ha expirado." + err})
+    }
     const validToken = await User.findOne ({ tokenForgot: token });
     if (validToken) {
         res.json({msg: "El token es correcto y el usuario existe"});   
-
     } else {
-        const error = new Error ("Token incorrecto");
+        const error = new Error ("Este token no fue generado por un usuario, o ya ha sido utilizado");
         return res.status(400).json({ msg: error.message })
     }
 };
@@ -119,13 +123,11 @@ const checkForgotToken = async (req, res) => { //Aca checkeamos que el token sea
 const changeForgotPassword = async (req, res) => {
     const { token } = req.params; //Sacamos el token, ya que lo vamos a verificar de nuevo antes de realizar el cambio de password
     const { password } = req.body; //Checkeamos de recibir una password
-    var errorToken 
-    jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
-        if (err) {
-            errorToken = err
-        }
-    })  //La validez y el timer del jwt
-    if (errorToken) {return res.status(400).json({ msg: "Su token es invalido o ha expirado." + errorToken})} // Seguramente hay una mejor forma de hacer esto
+    try {
+        jwt.verify(token, process.env.JWT_SECRET)
+    } catch(err) {
+        return res.status(400).json({ msg: "Su token es invalido o ha expirado." + err})
+    }// Seguramente hay una mejor forma de hacer esto. Ademas se podría modularizar esta porción de codigo, ya que la verificación del JWT va a ser utilizada en otros lares
     const user = await User.findOne({ tokenForgot: token }) //Checkeamos si tenemos un usuario guardado en la bdd que haya tenga dicho token
  
     if (user) {
@@ -144,7 +146,6 @@ const changeForgotPassword = async (req, res) => {
         const error = new Error( "Este token no fue generado por un usuario, o ya ha sido utilizado");
         return res.status(400).json({ msg: error.message });
     }
-
 }
 
 
