@@ -25,7 +25,10 @@ const userSchema = mongoose.Schema(
         trim: true,
         unique: true
       },
-      token: {
+      tokenConfirm: {
+        type: String
+      },
+      tokenForgot: {
         type: String
       },
       birthday: {

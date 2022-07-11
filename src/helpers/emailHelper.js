@@ -1,14 +1,6 @@
 import nodemailer from "nodemailer";
+import { transportVar1 } from "./transportVar.js";
 
-
-export const transportVar = { // Este es el transport var de mi mailtrap, lo estoy usando de prueba para ver si funca, pueden hacerse uno o avisarme si quieren probar algo y lo vemos
-    host: "smtp.mailtrap.io",
-    port: 2525,
-    auth: {
-    user: "52fc1095aba05e",
-    pass: "787ee01ee5f8d7"
-    }
-  };
 
 const emailTemplateConfirmed = (name, token) => `<!DOCTYPE html>
 <html lang="en">
@@ -46,26 +38,26 @@ const emailTemplateForgot = (name, token) => `<!DOCTYPE html>
 </html>`; //CAMBIAR NOMBRE !!!
 
 export const emailToken = async (user) => {
-  const { email, name, token } = user;
-  const transport = nodemailer.createTransport(transportVar);
+  const { email, name, tokenConfirm } = user;
+  const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
     from: '"APP GASTOS - Cuentas de usuario" <prueba@APPGASTOS.com>', //CAMBIAR NOMBRE !!!
     to: email,
     subject: "APP GASTOS - Confirma tu cuenta", //CAMBIAR NOMBRE !!!
     text: "Confirma tu cuenta de APP GASTOS", //CAMBIAR NOMBRE !!!
 
-    html: emailTemplateConfirmed(name, token)
+    html: emailTemplateConfirmed(name, tokenConfirm)
   });
 };
 
 export const emailForgot = async (user) => {
-  const { email, name, token } = user;
-  const transport = nodemailer.createTransport(transportVar);
+  const { email, name, tokenForgot } = user;
+  const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
     from: '"APP GASTOS - Cuentas de usuario" <prueba@APPGASTOS.com>', //CAMBIAR NOMBRE !!!
     to: email,
     subject: "APP GASTOS - Reestablecer Contraseña", //CAMBIAR NOMBRE !!!
     text: "Por favor, cambie su contraseñá",
-    html: emailTemplateForgot(name, token)
+    html: emailTemplateForgot(name, tokenForgot)
   });
 };

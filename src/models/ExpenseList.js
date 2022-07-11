@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const expenseSchema = mongoose.Schema({
+const expenseListSchema = mongoose.Schema({
     expenses:[{
         name: {
             type: String,
@@ -22,7 +22,7 @@ const expenseSchema = mongoose.Schema({
         categoryID: {
             type: String,
             required: true,
-            ref: "Category"
+            ref: "CategoryList"
         }
     }],
 
@@ -35,5 +35,5 @@ const expenseSchema = mongoose.Schema({
   },
 )
 
-const Expense = mongoose.model("Expense", expenseSchema);
-export default Expense;
+const ExpenseList = mongoose.model("ExpenseList", expenseListSchema);
+export default ExpenseList;

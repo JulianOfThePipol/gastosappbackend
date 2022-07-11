@@ -1,6 +1,7 @@
 import User from "../models/User.js";
-import { createJWT, createJWTConfirmed } from "../helpers/createJWT.js";
+import { createJWT, createJWTConfirmed, createJWTForgot } from "../helpers/createJWT.js";
 import { emailForgot, emailToken } from "../helpers/emailHelper.js";
+import jwt from "jsonwebtoken"
 
 
 //Este controlador crea un nuevo usuario.
@@ -15,9 +16,9 @@ const createNewUser = async (req, res) => {
         } //Si ya existe devolvemos un error
 
         const user = new User(req.body)
-        user.token = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
+        user.tokenConfirm = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
         await user.save(); //Aca iria el metodo del mail para el confirmed
-        emailToken(user)
+        emailToken({email: user.email, name: user.name, tokenConfirm: user.tokenConfirm})
         res.json({
             msg: "Usuario creado con exito, recibirá un email para confirmar su cuenta"
         });
@@ -28,7 +29,7 @@ const createNewUser = async (req, res) => {
             msg: `Lo sentimos, ocurrio un error al crear el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
         })
     }
-}
+};
 
 // Para el logueo
 const authenticate = async (req, res) => {
@@ -57,33 +58,94 @@ const authenticate = async (req, res) => {
         const error = new Error ("La contraseña es incorrecta")
         return res.status(400).json({msg: error.message})
     }
-}
+};
 
 // Para el confirmar la cuenta
-const confirmed = async (req, res) => {
+const confirmUser = async (req, res) => {
     const { token } = req.params; //extraemos el token de la url
-    const userConfirmed = await User.findOne ({token: token})
+    const userConfirmed = await User.findOne ({tokenConfirm: token})
     console.log(token) //Sacar
     console.log(userConfirmed) //Sacar
     if (!userConfirmed){
-        const error = new Error("incorrect Token");
+        const error = new Error("Token incorrecto");
         return res.status(400).json({msg: error.message}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
     }
 
     try{
         userConfirmed.confirmed = true;
-        userConfirmed.token = ""; //dejamos el token vacio, ya que la cuenta ya está confirmada. Hay un caso extremo que generaria problemas, en el caso de que el usuario se olvide la contraseña antes de confirmar su cuenta. Por ahí en lugar de un solo token, hacer dos tokens distintos
+        userConfirmed.tokenConfirm = ""; //dejamos el token vacio, ya que la cuenta ya está confirmada. Hay un caso extremo que generaria problemas, en el caso de que el usuario se olvide la contraseña antes de confirmar su cuenta. Por ahí en lugar de un solo token, hacer dos tokens distintos. RESUELTO
         await userConfirmed.save();
         res.json({msg: "Usuario confirmado con éxito"})
     } catch(error) {
-        console.log(error)//Sacar
         return res.status(400).json({
             msg: `Lo sentimos, ocurrio un error al confirmar el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
         })
     }
+};
+
+const forgotPassword = async (req, res) => {//Para el caso que el user se olvide la contraseña
+    const { email } = req.body;
+    const user = await User.findOne({email: email}); //buscamos si hay un usuario registrado con ese email
+    if (!user) {
+        const error = new Error("Usuario no encontrado");
+        return res.status(400).json({msg: error.message})
+    }
+
+    try {
+        user.tokenForgot = createJWTForgot()//creamos un token con timer (1 dia)
+        await user.save(); //Guardamos el token
+        emailForgot({email: user.email, name: user.name, tokenForgot: user.tokenForgot})//enviamos el mail al user
+        res.json({msg:"Enviamos un e-mail con instrucciones a su casilla"});
+    } catch (error) {
+        return res.status(400).json({
+            msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`
+        })
+
+    }
+};
+
+const checkForgotToken = async (req, res) => { //Aca checkeamos que el token sea valido, de serlo, ahi se mostraria la view para el cambio de contraseña
+    const { token } = req.params;
+    const validToken = await User.findOne ({ tokenForgot: token });
+    if (validToken) {
+        res.json({msg: "El token es correcto y el usuario existe"});   
+
+    } else {
+        const error = new Error ("Token incorrecto");
+        return res.status(400).json({ msg: error.message })
+    }
+};
+
+const changeForgotPassword = async (req, res) => {
+    const { token } = req.params; //Sacamos el token, ya que lo vamos a verificar de nuevo antes de realizar el cambio de password
+    const { password } = req.body; //Checkeamos de recibir una password
+    var errorToken 
+    jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+        if (err) {
+            errorToken = err
+        }
+    })  //La validez y el timer del jwt
+    if (errorToken) {return res.status(400).json({ msg: "Su token es invalido o ha expirado." + errorToken})} // Seguramente hay una mejor forma de hacer esto
+    const user = await User.findOne({ tokenForgot: token }) //Checkeamos si tenemos un usuario guardado en la bdd que haya tenga dicho token
+ 
+    if (user) {
+
+        user.password = password; //Cambiamos la contraseña. En el modelo esta instaurado el bcrypt, para que realize el hasheo de la contra
+        user.tokenForgot = ""; //Eliminamos el token despues de usarlo
+        try {
+            await user.save();
+            res.json({ msg: "La contraseña se ha modificado exitosamente"});
+        } catch (error) {
+            return res.status(400).json({
+                msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`
+            })
+        }
+    } else {
+        const error = new Error( "Este token no fue generado por un usuario, o ya ha sido utilizado");
+        return res.status(400).json({ msg: error.message });
+    }
+
 }
 
 
-
-
-export {createNewUser, authenticate, confirmed}
+export {createNewUser, authenticate, confirmUser, forgotPassword, checkForgotToken, changeForgotPassword}
