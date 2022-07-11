@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import { createJWT, createJWTConfirmed } from "../helpers/createJWT.js";
+import { createJWT, createJWTConfirmed, createJWTForgot } from "../helpers/createJWT.js";
 import { emailForgot, emailToken } from "../helpers/emailHelper.js";
 
 
@@ -15,9 +15,9 @@ const createNewUser = async (req, res) => {
         } //Si ya existe devolvemos un error
 
         const user = new User(req.body)
-        user.token = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
+        user.tokenConfirm = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
         await user.save(); //Aca iria el metodo del mail para el confirmed
-        emailToken(user)
+        emailToken({email: user.email, name: user.name, tokenConfirm: user.tokenConfirm})
         res.json({
             msg: "Usuario creado con exito, recibirá un email para confirmar su cuenta"
         });
@@ -62,7 +62,7 @@ const authenticate = async (req, res) => {
 // Para el confirmar la cuenta
 const confirmed = async (req, res) => {
     const { token } = req.params; //extraemos el token de la url
-    const userConfirmed = await User.findOne ({token: token})
+    const userConfirmed = await User.findOne ({tokenConfirm: token})
     console.log(token) //Sacar
     console.log(userConfirmed) //Sacar
     if (!userConfirmed){
@@ -72,18 +72,37 @@ const confirmed = async (req, res) => {
 
     try{
         userConfirmed.confirmed = true;
-        userConfirmed.token = ""; //dejamos el token vacio, ya que la cuenta ya está confirmada. Hay un caso extremo que generaria problemas, en el caso de que el usuario se olvide la contraseña antes de confirmar su cuenta. Por ahí en lugar de un solo token, hacer dos tokens distintos
+        userConfirmed.tokenConfirm = ""; //dejamos el token vacio, ya que la cuenta ya está confirmada. Hay un caso extremo que generaria problemas, en el caso de que el usuario se olvide la contraseña antes de confirmar su cuenta. Por ahí en lugar de un solo token, hacer dos tokens distintos. RESUELTO
         await userConfirmed.save();
         res.json({msg: "Usuario confirmado con éxito"})
     } catch(error) {
-        console.log(error)//Sacar
         return res.status(400).json({
             msg: `Lo sentimos, ocurrio un error al confirmar el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
         })
     }
 }
 
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({email: email});
+    if (!user) {
+        const error = new Error("Usuario no encontrado");
+        return res.status(400).json({msg: error.message})
+    }
+
+    try {
+        user.tokenForgot = createJWTForgot()
+        await user.save();
+        emailForgot({email: user.email, name: user.name, tokenForgot: user.tokenForgot})
+        res.json({msg:"Enviamos un e-mail con instrucciones a su casilla"});
+    } catch (error) {
+        return res.status(400).json({
+            msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`
+        })
+
+    }
+}
 
 
 
-export {createNewUser, authenticate, confirmed}
+export {createNewUser, authenticate, confirmed, forgotPassword}
