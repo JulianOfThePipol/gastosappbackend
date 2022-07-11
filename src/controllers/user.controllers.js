@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import { createJWT, createJWTConfirmed, createJWTForgot } from "../helpers/createJWT.js";
 import { emailForgot, emailToken } from "../helpers/emailHelper.js";
+import jwt from "jsonwebtoken"
 
 
 //Este controlador crea un nuevo usuario.
@@ -28,7 +29,7 @@ const createNewUser = async (req, res) => {
             msg: `Lo sentimos, ocurrio un error al crear el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
         })
     }
-}
+};
 
 // Para el logueo
 const authenticate = async (req, res) => {
@@ -57,16 +58,16 @@ const authenticate = async (req, res) => {
         const error = new Error ("La contraseña es incorrecta")
         return res.status(400).json({msg: error.message})
     }
-}
+};
 
 // Para el confirmar la cuenta
-const confirmed = async (req, res) => {
+const confirmUser = async (req, res) => {
     const { token } = req.params; //extraemos el token de la url
     const userConfirmed = await User.findOne ({tokenConfirm: token})
     console.log(token) //Sacar
     console.log(userConfirmed) //Sacar
     if (!userConfirmed){
-        const error = new Error("incorrect Token");
+        const error = new Error("Token incorrecto");
         return res.status(400).json({msg: error.message}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
     }
 
@@ -80,7 +81,7 @@ const confirmed = async (req, res) => {
             msg: `Lo sentimos, ocurrio un error al confirmar el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
         })
     }
-}
+};
 
 const forgotPassword = async (req, res) => {//Para el caso que el user se olvide la contraseña
     const { email } = req.body;
@@ -101,9 +102,50 @@ const forgotPassword = async (req, res) => {//Para el caso que el user se olvide
         })
 
     }
+};
+
+const checkForgotToken = async (req, res) => { //Aca checkeamos que el token sea valido, de serlo, ahi se mostraria la view para el cambio de contraseña
+    const { token } = req.params;
+    const validToken = await User.findOne ({ tokenForgot: token });
+    if (validToken) {
+        res.json({msg: "El token es correcto y el usuario existe"});   
+
+    } else {
+        const error = new Error ("Token incorrecto");
+        return res.status(400).json({ msg: error.message })
+    }
+};
+
+const changeForgotPassword = async (req, res) => {
+    const { token } = req.params; //Sacamos el token, ya que lo vamos a verificar de nuevo antes de realizar el cambio de password
+    const { password } = req.body; //Checkeamos de recibir una password
+    var errorToken 
+    jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+        if (err) {
+            errorToken = err
+        }
+    })  //La validez y el timer del jwt
+    if (errorToken) {return res.status(400).json({ msg: "Su token es invalido o ha expirado." + errorToken})} // Seguramente hay una mejor forma de hacer esto
+    const user = await User.findOne({ tokenForgot: token }) //Checkeamos si tenemos un usuario guardado en la bdd que haya tenga dicho token
+ 
+    if (user) {
+
+        user.password = password; //Cambiamos la contraseña. En el modelo esta instaurado el bcrypt, para que realize el hasheo de la contra
+        user.tokenForgot = ""; //Eliminamos el token despues de usarlo
+        try {
+            await user.save();
+            res.json({ msg: "La contraseña se ha modificado exitosamente"});
+        } catch (error) {
+            return res.status(400).json({
+                msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`
+            })
+        }
+    } else {
+        const error = new Error( "Este token no fue generado por un usuario, o ya ha sido utilizado");
+        return res.status(400).json({ msg: error.message });
+    }
+
 }
 
 
-
-
-export {createNewUser, authenticate, confirmed, forgotPassword}
+export {createNewUser, authenticate, confirmUser, forgotPassword, checkForgotToken, changeForgotPassword}

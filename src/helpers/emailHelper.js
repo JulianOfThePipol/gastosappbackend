@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
-import { transportVar } from "./transportVar";
+import { transportVar1 } from "./transportVar.js";
+
 
 const emailTemplateConfirmed = (name, token) => `<!DOCTYPE html>
 <html lang="en">
@@ -38,7 +39,7 @@ const emailTemplateForgot = (name, token) => `<!DOCTYPE html>
 
 export const emailToken = async (user) => {
   const { email, name, tokenConfirm } = user;
-  const transport = nodemailer.createTransport(transportVar);
+  const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
     from: '"APP GASTOS - Cuentas de usuario" <prueba@APPGASTOS.com>', //CAMBIAR NOMBRE !!!
     to: email,
@@ -51,7 +52,7 @@ export const emailToken = async (user) => {
 
 export const emailForgot = async (user) => {
   const { email, name, tokenForgot } = user;
-  const transport = nodemailer.createTransport(transportVar);
+  const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
     from: '"APP GASTOS - Cuentas de usuario" <prueba@APPGASTOS.com>', //CAMBIAR NOMBRE !!!
     to: email,
