@@ -82,18 +82,18 @@ const confirmed = async (req, res) => {
     }
 }
 
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (req, res) => {//Para el caso que el user se olvide la contraseña
     const { email } = req.body;
-    const user = await User.findOne({email: email});
+    const user = await User.findOne({email: email}); //buscamos si hay un usuario registrado con ese email
     if (!user) {
         const error = new Error("Usuario no encontrado");
         return res.status(400).json({msg: error.message})
     }
 
     try {
-        user.tokenForgot = createJWTForgot()
-        await user.save();
-        emailForgot({email: user.email, name: user.name, tokenForgot: user.tokenForgot})
+        user.tokenForgot = createJWTForgot()//creamos un token con timer (1 dia)
+        await user.save(); //Guardamos el token
+        emailForgot({email: user.email, name: user.name, tokenForgot: user.tokenForgot})//enviamos el mail al user
         res.json({msg:"Enviamos un e-mail con instrucciones a su casilla"});
     } catch (error) {
         return res.status(400).json({
@@ -102,6 +102,7 @@ const forgotPassword = async (req, res) => {
 
     }
 }
+
 
 
 
