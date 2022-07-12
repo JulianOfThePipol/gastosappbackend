@@ -148,5 +148,35 @@ const changeForgotPassword = async (req, res) => {
     }
 }
 
+const userProfile = async (req, res) =>{
+    const { user } = req;
+    console.log(user) //Sacar
+    const fullUser = await User.findById(user._id).select("-password -tokenForgot -tokenConfirm -isDeleted -confirmed  -updatedAt -__v");
+    console.log("Logueado en el perfil de "+ fullUser.name) //Sacar
+    res.json(fullUser)
+}
 
-export {createNewUser, authenticate, confirmUser, forgotPassword, checkForgotToken, changeForgotPassword}
+const changeProfile = async (req, res) =>{
+    const { user } = req;
+    console.log("En controlador de cambio de nombre para el usuario" + user.name);
+    const { name, lastName, birthday} = req.body;
+    const fullUser = await User.findById(user._id);
+    if (name === fullUser.name && lastName === fullUser.lastName){
+        return res.status(400).json({msg: "No hubo cambios"})
+    };
+    if(name && fullUser.name !== name) {
+        fullUser.name = name
+    }
+    if(lastName && fullUser.lastName !== name) {
+        fullUser.name = name
+    } //Por ahí podria cambiar esto y hacer un controlador para cada cambio, pero me parece mas engorroso
+    try {
+        await fullUser.save();
+        res.json({msg: "Datos modificados con éxito"})
+    } catch (error) {
+        return res.status(400).json({msg: `Ha ocurrido un error: ${error}, sus datos no han sido modificados`})
+    }
+}
+
+
+export {createNewUser, authenticate, confirmUser, forgotPassword, checkForgotToken, changeForgotPassword, userProfile, changeProfile}
