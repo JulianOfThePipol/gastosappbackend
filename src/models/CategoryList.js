@@ -6,7 +6,8 @@ const categoryListSchema = mongoose.Schema({
             name: {
                 type: String,
                 required: true, // hace que este campo sea obligatorio
-                trim: true // te quita los espacios de adelante y de atras
+                trim: true, // te quita los espacios de adelante y de atras
+                unique: true
             },
 
             color: {
@@ -20,7 +21,8 @@ const categoryListSchema = mongoose.Schema({
     userID: {
         type: String,
         required: true,
-        ref: "User"
+        ref: "User",
+        unique: true
     }
         
         

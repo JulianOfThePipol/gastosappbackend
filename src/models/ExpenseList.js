@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
 const expenseListSchema = mongoose.Schema({
-    expenses:[{
+    expenses:[
+    {
         name: {
             type: String,
             required: true, // hace que este campo sea obligatorio
@@ -29,7 +30,8 @@ const expenseListSchema = mongoose.Schema({
     userID: {
         type: String,
         required: true,
-        ref: "User"
+        ref: "User",
+        unique: true
     }
 
   },

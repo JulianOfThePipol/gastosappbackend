@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import { User, ExpenseList, CategoryList } from "../models/index.js";
 import { createJWT, createJWTConfirmed, createJWTForgot } from "../helpers/createJWT.js";
 import { emailForgot, emailToken } from "../helpers/emailHelper.js";
 import jwt from "jsonwebtoken"
@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken"
 
 //Este controlador crea un nuevo usuario.
 const createNewUser = async (req, res) => {
-    try{
+    
         const { email } = req.body; // se extrae el email
         const existUser = await User.findOne ({email: email})
         if (existUser) {
@@ -14,21 +14,55 @@ const createNewUser = async (req, res) => {
             console.log(error);//Sacar
             return res.status(400).json({msg: error.message})
         } //Si ya existe devolvemos un error
+        
+        try{
+            const user = new User(req.body)
+            const rawCategoryList = {
+                userID: user._id,
+                categories: [
+                    {
+                        name: "Inversiones",
+                        color: "Green"
+                    },
+                    {
+                        name: "Transporte",
+                        color: "Red"
+                    },
+                    {
+                        name: "Comida",
+                        color: "Orange"
+                    },
+                    {
+                        name: "Servicios",
+                        color: "Blue"
+                    },
+                    {
+                        name: "Otros",
+                        color: "Yellow"
+                    }
+                ]
+            }
+            const categoryList = new CategoryList(rawCategoryList)
+            const rawExpenseList = {
+                userID: user._id,
+                expenses: []
+            }
+            const expenseList = new ExpenseList(rawExpenseList)
+            user.tokenConfirm = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
+            await user.save(); //Aca iria el metodo del mail para el confirmed
+            await categoryList.save();
+            await expenseList.save();
+            emailToken({email: user.email, name: user.name, tokenConfirm: user.tokenConfirm})
+            res.json({
+                msg: "Usuario creado con exito, recibirá un email para confirmar su cuenta"
+            });
 
-        const user = new User(req.body)
-        user.tokenConfirm = createJWTConfirmed(user.email) //Sin restricción de tiempo. Solo queremos un token que vamos a usar para el confirmed
-        await user.save(); //Aca iria el metodo del mail para el confirmed
-        emailToken({email: user.email, name: user.name, tokenConfirm: user.tokenConfirm})
-        res.json({
-            msg: "Usuario creado con exito, recibirá un email para confirmar su cuenta"
-        });
-
-    } catch(error) {
-        console.log(error)//Sacar
-        return res.status(400).json({
-            msg: `Lo sentimos, ocurrio un error al crear el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
-        })
-    }
+        } catch(error) {
+            console.log(error)//Sacar
+            return res.status(400).json({
+                msg: `Lo sentimos, ocurrio un error al crear el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
+            })
+        }
 };
 
 // Para el logueo
