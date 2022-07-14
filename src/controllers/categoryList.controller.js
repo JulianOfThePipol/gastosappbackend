@@ -60,12 +60,12 @@ const changeCategory = async (req, res) => {
     const { user } = req
     const { categoryName, newCategoryName, newCategoryColor } = req.body
     const categoryList = await CategoryList.findOne({userID: user._id})
-    if(!newCategoryName && !newCategoryColor) {
-        return res.status(400).json({msg: "No hay cambios a realizar"})
-    }
     if (!categoryList){
         const error = new Error ("Listado de categorias no encontrado")
         res.status(400).json({ msg: error.msg })
+    }
+    if(!newCategoryName && !newCategoryColor) {
+        return res.status(400).json({msg: "No hay cambios a realizar"})
     }
     const categoryExists = categoryList.categories.findIndex(category => category.name === categoryName);
     if (categoryExists !== -1){
