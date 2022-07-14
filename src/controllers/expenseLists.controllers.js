@@ -42,24 +42,23 @@ const addExpense = async (req, res) => {
 
 const removeExpense = async (req, res) => {
     const {user} = req
-    const { expenseName } = req.body
+    const { expenseID } = req.body
     const expenseList = await ExpenseList.findOne({userID: user._id})
     if (!expenseList){
-        res.status(400).json({ msg: "Listado de categorias no encontrado" , error:true})
+        res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
     }
-    const expenseExists = expenseList.expenses.findIndex(expense => expense.name === expenseName); //Aca nos aseguramos que la categoria exista, y extraemos su index
-    console.log(expenseExists) //sacar
+    const expenseExists = expenseList.expenses.findIndex(expense => expense._id.toString() === expenseID); //Aca nos aseguramos que la categoria exista, y extraemos su index
     if(expenseExists !== -1){
         console.log(expenseList.expenses.expenseExists)
         expenseList.expenses.splice(expenseExists, 1) //Sacamos la categoria del listado
         try { 
             await expenseList.save(); //Guardamos el listado
-            res.status(201).json({msg: "Categoria eliminada exitosamente"}); //Le puse un 201 en vez de un 204 para poder mandar un json de respuesta, personalmente prefiero ver que reciba algo
+            res.status(201).json({msg: "Gasto eliminado exitosamente"}); //Le puse un 201 en vez de un 204 para poder mandar un json de respuesta, personalmente prefiero ver que reciba algo
         } catch (error) {
             return res.status(409).json({msg: `Ocurrió un error: ${error}` , error:true})
         }
     } else {
-        return res.status(400).json({msg:"La categoria no existe" , error:true})
+        return res.status(400).json({msg:"El gasto no existe" , error:true})
     }
 }
 
@@ -102,4 +101,4 @@ const changeExpense = async (req, res) => {
 }
 
 
-export {getExpenseList, addExpense}
+export {getExpenseList, addExpense, removeExpense}
