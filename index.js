@@ -23,7 +23,7 @@ const corsOption = {
   app.use(cors(corsOption));
 
   app.use("/api/user", userRouter);
-  app.use("/api/category", categoryListRouter);
+  app.use("/api/categories", categoryListRouter);
   app.use("/api/expenses", expenseListRouter)
 
   const port = process.env.PORT || 4000;
