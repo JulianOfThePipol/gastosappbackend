@@ -30,7 +30,7 @@ const addExpense = async (req, res) => {
     if (!categoryExists) {
         res.status(400).json({ msg: "Categoría no encontrada", error:true})
     } else { 
-    expenseList.expenses.push({name: expenseName, value: expenseValue, date: expenseDate, categoryID: category._id}) //Agregamos el gasto a la lista
+    expenseList.expenses.push({name: expenseName, value: expenseValue, date: expenseDate, categoryID: categoryExists._id}) //Agregamos el gasto a la lista
     try {
         await expenseList.save(); //Guardamos la nueva lista
         res.status(201).json({msg: "Gasto creado exitosamente"});
@@ -47,7 +47,7 @@ const removeExpense = async (req, res) => {
     if (!expenseList){
         res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
     }
-    const expenseExists = expenseList.expenses.findIndex(expense => expense._id.toString() === expenseID); //Aca nos aseguramos que la categoria exista, y extraemos su index
+    const expenseExists = expenseList.expenses.findIndex(expense => expense._id.toString() === expenseID); //Aca nos aseguramos que el gasto exista, y extraemos su index
     if(expenseExists !== -1){
         console.log(expenseList.expenses.expenseExists)
         expenseList.expenses.splice(expenseExists, 1) //Sacamos la categoria del listado
@@ -64,41 +64,50 @@ const removeExpense = async (req, res) => {
 
 const changeExpense = async (req, res) => {
     const { user } = req
-    const { expenseName, newExpenseName, newExpenseColor } = req.body
+    const { expenseID, newExpenseName, newExpenseValue, newCategory, newExpenseDate } = req.body
     const expenseList = await ExpenseList.findOne({userID: user._id})
     if (!expenseList){
-        res.status(400).json({ msg: "Listado de categorias no encontrado" , error:true})
+        res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
     }
-    if(!newExpenseName && !newExpenseColor) {
+    if(!newExpenseName && !newExpenseValue && !newCategory && !newExpenseDate) {
         return res.status(400).json({msg: "No hay cambios a realizar" , error:true})
     }
-    const expenseExists = expenseList.expenses.findIndex(expense => expense.name === expenseName);
+    const expenseExists = expenseList.expenses.findIndex(expense => expense._id.toString() === expenseID);
     if (expenseExists !== -1){
-        if(expenseList.expenses[expenseExists].name === newExpenseName && 
-            expenseList.expenses[expenseExists].color === newExpenseColor) {
-                return res.status(400).json({msg: "No hay cambios" , error:true})
-        }
 
-        if (newExpenseName && expenseName !== newExpenseName){
+        if(newCategory){
+            const categoryList = await CategoryList.findOne ({ userID: user._id});
+            const categoryExists = categoryList.categories.find(category => category.name === newCategory);
+            if (!categoryExists) {
+                return res.status(400).json({msg: "La categoria no existe", error: true})
+            } else {
+                expenseList.expenses[expenseExists].categoryID = categoryExists._id
+            }
+        }
+        if (newExpenseName){
             expenseList.expenses[expenseExists].name = newExpenseName
         }
 
-        if (newExpenseColor && expenseList.expenses[expenseExists].color !== newExpenseColor){
-            expenseList.expenses[expenseExists].color = newExpenseColor
+        if (newExpenseDate){
+            expenseList.expenses[expenseExists].date = newExpenseDate
+        }
+
+        if (newExpenseValue){
+            expenseList.expenses[expenseExists].value = newExpenseValue
         } // Habria que refinar esta parte, está poco legible.
 
         try {
             await expenseList.save(); //Guardamos el listado
-            res.status(201).json({msg: "Categoria modificada exitosamente"});
+            res.status(201).json({msg: "Gasto modificado exitosamente"});
         } catch (error){
             return res.status(409).json({msg: `Ocurrió un error: ${error}` , error:true})
         }
     } else {
-        return res.status(400).json({msg:"La categoria no existe" , error:true})
+        return res.status(400).json({msg:"El gasto no existe" , error:true})
     }
 
 
 }
 
 
-export {getExpenseList, addExpense, removeExpense}
+export {getExpenseList, addExpense, removeExpense, changeExpense}

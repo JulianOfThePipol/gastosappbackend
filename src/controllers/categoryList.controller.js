@@ -64,6 +64,10 @@ const changeCategory = async (req, res) => {
         return res.status(400).json({msg: "No hay cambios a realizar" , error: true})
     }
     const categoryExists = categoryList.categories.findIndex(category => category.name === categoryName);
+    const newCategoryNameInUse = categoryList.categories.findIndex(category => category.name === newCategoryName);
+    if (newCategoryNameInUse !== -1) {
+        return res.status(400).json({msg: "Ya existe una categoría con ese nombre" , error: true})
+    }
     if (categoryExists !== -1){
         if(categoryList.categories[categoryExists].name === newCategoryName && 
             categoryList.categories[categoryExists].color === newCategoryColor) {
