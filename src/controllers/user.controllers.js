@@ -10,9 +10,7 @@ const createNewUser = async (req, res) => {
         const { email } = req.body; // se extrae el email
         const existUser = await User.findOne ({email: email})
         if (existUser) {
-            const error = new Error("Usuario ya está registrado")
-            console.log(error);//Sacar
-            return res.status(400).json({msg: error.message})
+            return res.status(400).json({msg: "Usuario ya está registrado", error:true})
         } //Si ya existe devolvemos un error
         
         try{
@@ -58,7 +56,6 @@ const createNewUser = async (req, res) => {
             });
 
         } catch(error) {
-            console.log(error)//Sacar
             return res.status(400).json({
                 msg: `Lo sentimos, ocurrio un error al crear el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
             })
@@ -70,15 +67,13 @@ const authenticate = async (req, res) => {
     const {email, password} = req.body;
     const user = await User.findOne({email: email }); //Buscamos al usuario
     if (!user) {
-        const error = new Error("El usuario no está registrado");
-        return res.status(400).json({msg: error.message}); //Si no está, devolvemos un error
+        return res.status(400).json({msg: "El usuario no está registrado" , error: true}); //Si no está, devolvemos un error
     }
 
     if (await user.checkPassword(password)) {
         
         if (!user.confirmed) {
-            const error = new Error("Tu cuenta no está confirmada");
-            return res.status(400).json({msg: error.message})
+            return res.status(400).json({msg: error.message, error: true})
         }
 
         console.log(user) //Sacar
@@ -89,8 +84,7 @@ const authenticate = async (req, res) => {
             token: createJWT(user._id) // Aca va el token, con un timer, ya que este si tiene que expirar
         })
     } else {
-        const error = new Error ("La contraseña es incorrecta")
-        return res.status(400).json({msg: error.message})
+        return res.status(400).json({msg: "La contraseña es incorrecta" , error: true})
     }
 };
 
@@ -101,18 +95,17 @@ const confirmUser = async (req, res) => {
     console.log(token) //Sacar
     console.log(userConfirmed) //Sacar
     if (!userConfirmed){
-        const error = new Error("Token incorrecto");
-        return res.status(400).json({msg: error.message}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
+        return res.status(400).json({msg: "Token incorrecto", error:true}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
     }
 
     try{
         userConfirmed.confirmed = true;
         userConfirmed.tokenConfirm = ""; //dejamos el token vacio, ya que la cuenta ya está confirmada. Hay un caso extremo que generaria problemas, en el caso de que el usuario se olvide la contraseña antes de confirmar su cuenta. Por ahí en lugar de un solo token, hacer dos tokens distintos. RESUELTO
         await userConfirmed.save();
-        res.json({msg: "Usuario confirmado con éxito"})
+        res.json({msg: "Usuario confirmado con éxito" , error:true})
     } catch(error) {
         return res.status(400).json({
-            msg: `Lo sentimos, ocurrio un error al confirmar el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`
+            msg: `Lo sentimos, ocurrio un error al confirmar el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`, error: true
         })
     }
 };
@@ -121,8 +114,7 @@ const forgotPassword = async (req, res) => {//Para el caso que el user se olvide
     const { email } = req.body;
     const user = await User.findOne({email: email}); //buscamos si hay un usuario registrado con ese email
     if (!user) {
-        const error = new Error("Usuario no encontrado");
-        return res.status(400).json({msg: error.message})
+        return res.status(400).json({msg: "Usuario no encontrado", error:true})
     }
 
     try {
@@ -132,7 +124,7 @@ const forgotPassword = async (req, res) => {//Para el caso que el user se olvide
         res.json({msg:"Enviamos un e-mail con instrucciones a su casilla"});
     } catch (error) {
         return res.status(400).json({
-            msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`
+            msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`, error:true
         })
 
     }
@@ -143,14 +135,13 @@ const checkForgotToken = async (req, res) => { //Aca checkeamos que el token sea
     try {
         jwt.verify(token, process.env.JWT_SECRET)
     } catch(err) {
-        return res.status(400).json({ msg: "Su token es invalido o ha expirado." + err})
+        return res.status(400).json({ msg: "Su token es invalido o ha expirado." + err, error: true})
     }
     const validToken = await User.findOne ({ tokenForgot: token });
     if (validToken) {
-        res.json({msg: "El token es correcto y el usuario existe"});   
+        res.json({msg: "El token es correcto y el usuario existe", error: true});   
     } else {
-        const error = new Error ("Este token no fue generado por un usuario, o ya ha sido utilizado");
-        return res.status(400).json({ msg: error.message })
+        return res.status(400).json({ msg: "Este token no fue generado por un usuario, o ya ha sido utilizado" , error:true})
     }
 };
 
@@ -160,7 +151,7 @@ const changeForgotPassword = async (req, res) => {
     try {
         jwt.verify(token, process.env.JWT_SECRET)
     } catch(err) {
-        return res.status(400).json({ msg: "Su token es invalido o ha expirado." + err})
+        return res.status(400).json({ msg: "Su token es invalido o ha expirado." + err, error: true})
     }// Seguramente hay una mejor forma de hacer esto. Ademas se podría modularizar esta porción de codigo, ya que la verificación del JWT va a ser utilizada en otros lares
     const user = await User.findOne({ tokenForgot: token }) //Checkeamos si tenemos un usuario guardado en la bdd que haya tenga dicho token
  
@@ -170,15 +161,15 @@ const changeForgotPassword = async (req, res) => {
         user.tokenForgot = ""; //Eliminamos el token despues de usarlo
         try {
             await user.save();
-            res.json({ msg: "La contraseña se ha modificado exitosamente"});
+            res.json({ msg: "La contraseña se ha modificado exitosamente", error:true});
         } catch (error) {
             return res.status(400).json({
-                msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`
+                msg: `Lo sentimos, ocurrio un error, por favor, intente nuevamente. Si el problema persiste, comunique el siguiente codigo a un administrador ${error}`,
+                error: true
             })
         }
     } else {
-        const error = new Error( "Este token no fue generado por un usuario, o ya ha sido utilizado");
-        return res.status(400).json({ msg: error.message });
+        return res.status(400).json({ msg: "Este token no fue generado por un usuario, o ya ha sido utilizado", error: true });
     }
 }
 
@@ -196,7 +187,7 @@ const changeProfile = async (req, res) =>{
     const { name, lastName, birthday} = req.body;
     const fullUser = await User.findById(user._id);
     if (name === fullUser.name && lastName === fullUser.lastName){
-        return res.status(400).json({msg: "No hubo cambios"})
+        return res.status(400).json({msg: "No hubo cambios", error: true})
     };
     if(name && fullUser.name !== name) {
         fullUser.name = name
@@ -208,7 +199,7 @@ const changeProfile = async (req, res) =>{
         await fullUser.save();
         res.json({msg: "Datos modificados con éxito"})
     } catch (error) {
-        return res.status(400).json({msg: `Ha ocurrido un error: ${error}, sus datos no han sido modificados`})
+        return res.status(400).json({msg: `Ha ocurrido un error: ${error}, sus datos no han sido modificados`, error: true})
     }
 }
 

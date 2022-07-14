@@ -15,7 +15,6 @@ export default async function checkAuth (req, res, next) {
             return res.status(401).json({msg: `Token erroneo, o fallo el decode. Mensaje de error: ${error}`})
         }
     } else {
-        const error = new Error ("El usuario no está logueado, o fallo el envió de su token")
-        res.status(401).json({msj: error.message})
+        res.status(401).json({msj: "El usuario no está logueado, o fallo el envió de su token", error: true})
     }
 }
