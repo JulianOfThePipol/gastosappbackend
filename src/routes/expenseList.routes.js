@@ -14,7 +14,8 @@ expenseListRouter.get("/", checkAuth, getExpenseList)
 expenseListRouter.post("/", checkAuth, addExpense)
 expenseListRouter.delete("/", checkAuth, removeExpense)
 expenseListRouter.patch("/", checkAuth, changeExpense)
-expenseListRouter.get("/searchByName/search=:search&page=:page&limit=:limit", checkAuth, searchExpenseListByName)
+expenseListRouter.get("/searchByName/search=:search&page=:page&limit=:limit&sortBy=:sortBy&desc=:desc", checkAuth, searchExpenseListByName)
+
 
 
 

@@ -1,3 +1,4 @@
+import { sortArray } from "../helpers/sortArray.js";
 import { CategoryList, ExpenseList } from "../models/index.js";
 
 
@@ -109,26 +110,29 @@ const changeExpense = async (req, res) => {
 
 const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const {user} = req //Este user viene dado por el checkAuth
-    const { search, page, limit } = req.params
+    const { search, page, limit, sortBy, desc } = req.params
     console.log(req.params)
     const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
     if (!expenseList){
         res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
     }
     const searchedList = expenseList.expenses.filter(expense => expense.name.includes(search))
-    console.log(searchedList)
     if(searchedList.length === 0) {
         return res.status(400).json({msg: "No hay ningun gasto que contenga ese nombre" , error:true})
     }
-    if (searchedList.length < (page)*limit) {
+    if (Math.ceil(searchedList.length/limit) < page) {
         return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
     }
-    const limitList = searchedList.splice((page-1)*limit,limit)
+    const sortedList = sortArray(searchedList, sortBy, desc)
+    const totalItems = searchedList.length
+    const limitList = sortedList.splice((page-1)*limit,limit)
+  
     
     if (limitList){
-        return res.status(200).json({results:limitList, totalItems: searchedList.length, currentItems: limitList.length})
+        return res.status(200).json({results:limitList, totalItems: totalItems, currentItems: limitList.length})
     } 
 }
+
 
 
 export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName}
