@@ -95,7 +95,7 @@ const confirmUser = async (req, res) => {
     console.log(token) //Sacar
     console.log(userConfirmed) //Sacar
     if (!userConfirmed){
-        return res.status(400).json({msg: "Token incorrecto", error:true}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
+        return res.status(400).json({msg: "Token incorrecto o expirado", error:true}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
     }
 
     try{
