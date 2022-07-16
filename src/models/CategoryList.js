@@ -7,7 +7,6 @@ const categoryListSchema = mongoose.Schema({
                 type: String,
                 required: true, // hace que este campo sea obligatorio
                 trim: true, // te quita los espacios de adelante y de atras
-                unique: true
             },
 
             color: {
