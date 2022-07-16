@@ -133,6 +133,16 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
     } 
 }
 
+const searchExpenseListByName2 = async (req, res) => { //Para pedir el listado de categorias
+    const { user } = req //Este user viene dado por el checkAuth
+    const { search, page, limit, sortBy, desc } = req.params
+    console.log(req.params)
+    const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id").find({expenses:{"name": "test"}} )
+    if (expenseList){
+        return res.status(200).json(expenseList)
+    }else{
+        return res.status(400).json("fallose")
+    }}
 
 
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName}
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName, searchExpenseListByName2}
