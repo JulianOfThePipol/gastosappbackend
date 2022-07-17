@@ -102,7 +102,7 @@ const confirmUser = async (req, res) => {
         userConfirmed.confirmed = true;
         userConfirmed.tokenConfirm = ""; //dejamos el token vacio, ya que la cuenta ya está confirmada. Hay un caso extremo que generaria problemas, en el caso de que el usuario se olvide la contraseña antes de confirmar su cuenta. Por ahí en lugar de un solo token, hacer dos tokens distintos. RESUELTO
         await userConfirmed.save();
-        res.json({msg: "Usuario confirmado con éxito" , error:true})
+        res.json({msg: "Usuario confirmado con éxito" })
     } catch(error) {
         return res.status(400).json({
             msg: `Lo sentimos, ocurrio un error al confirmar el usuario. Por favor, comunique el siguiente codigo a un administrador ${error}`, error: true
