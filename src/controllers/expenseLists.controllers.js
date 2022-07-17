@@ -137,7 +137,44 @@ const searchExpenseListByName2 = async (req, res) => { //Para pedir el listado d
     const { user } = req //Este user viene dado por el checkAuth
     const { search, page, limit, sortBy, desc } = req.params
     console.log(req.params)
-    const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id").find({expenses:{"name": "test"}} )
+    const regex = new RegExp(search,'i')
+    const expenseList = await ExpenseList.aggregate([
+        {$match: {userID: `${user._id}`}},
+        {$project:{
+            _id:0,
+            expenses:{
+                $filter:{
+                    input:`$expenses`,
+                    as: `item`,
+                    cond: {$regexFind:{input: "$$item.name", regex: regex}}
+                }
+                
+            }
+
+        }},
+        {$unwind:"$expenses"},
+        {$sort:{"expenses.name":1}},
+     
+        { "$skip": 0 },
+        { "$limit": 3 }
+
+/*         { "$facet": {
+            "expenses": [
+              { "$match": { }},
+              { "$skip": 1 },
+              { "$limit": 1 }
+            ],
+            "totalCount": [
+              { "$count": "count" }
+            ]
+          }} */
+       
+  
+        
+        
+    ])
+    /* findOne({userID: user._id}).select("expenses -_id").find({"expenses":{$filter: {"name":"date"}}}) */
+
     if (expenseList){
         return res.status(200).json(expenseList)
     }else{
