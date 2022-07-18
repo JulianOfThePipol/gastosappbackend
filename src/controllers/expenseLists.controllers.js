@@ -108,7 +108,55 @@ const changeExpense = async (req, res) => {
     }
 }
 
+
 const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
+    const { user } = req //Este user viene dado por el checkAuth
+    const { search, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
+    console.log(req.params)
+    const regex = new RegExp(search,'i')
+    const expenseList = await ExpenseList.aggregate([
+        {$match: {userID: `${user._id}`}},
+        {$project:{
+            expenses:{
+                $filter:{
+                    input:`$expenses`,
+                    as: `item`,
+                    cond: {$regexFind:{input: "$$item.name", regex: regex}}
+                }
+            }
+        }},
+        {$unwind:"$expenses"},
+        {$sort:{[`expenses.${sortBy}`]:parseInt(desc)}},
+        { "$facet": {
+            "expenses": [
+              { "$skip": (page-1)*limit },
+              { "$limit": parseInt(limit)},
+              {"$group":{"_id":"$_id", "expenses":{"$push":"$expenses"}}}
+            ],
+            "totalCount": [
+              { "$count": "count" }
+            ]
+        }}
+    ])
+    const results = expenseList[0]
+    if(results.totalCount.length === 0){
+        return res.status(400).json({msg: "No hay ningun gasto que contenga ese nombre" , error:true})
+    }
+    if(Math.ceil(results.totalCount[0].count/limit) < page) {
+        return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
+    }
+    if (results){
+        return res.status(200).json(results)
+    }else{
+        return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
+    }}
+
+
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName}
+
+
+
+/* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const {user} = req //Este user viene dado por el checkAuth
     const { search, page, limit, sortBy, desc } = req.params
     console.log(req.params)
@@ -131,8 +179,4 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
     if (limitList){
         return res.status(200).json({results:limitList, totalItems: totalItems, currentItems: limitList.length})
     } 
-}
-
-
-
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName}
+} */ //este hermoso snippet de código era una solución alternativa, aunque poco performante para realizar la busqueda. Basicamente realiza todo con javascript. Me daba lástima eliminarlo.
