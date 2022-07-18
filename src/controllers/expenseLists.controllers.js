@@ -10,6 +10,7 @@ const getExpenseList = async (req, res) => { //Para pedir el listado de categori
     res.json(expenseList)
 }
 
+
 const addExpense = async (req, res) => {
     const {user} = req
     const { expenseName, expenseValue, expenseDate, categoryName } = req.body
@@ -40,6 +41,7 @@ const addExpense = async (req, res) => {
 
 }
 
+
 const removeExpense = async (req, res) => {
     const {user} = req
     const { expenseID } = req.body
@@ -61,6 +63,7 @@ const removeExpense = async (req, res) => {
         return res.status(400).json({msg:"El gasto no existe" , error:true})
     }
 }
+
 
 const changeExpense = async (req, res) => {
     const { user } = req
@@ -149,6 +152,7 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
     }else{
         return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
     }}
+
 
     const searchExpenseListByValue = async (req, res) => { //Para pedir el listado de categorias
         const { user } = req //Este user viene dado por el checkAuth
