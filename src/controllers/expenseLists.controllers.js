@@ -1,4 +1,3 @@
-import { sortArray } from "../helpers/sortArray.js";
 import { CategoryList, ExpenseList } from "../models/index.js";
 
 
@@ -151,8 +150,74 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
         return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
     }}
 
+    const searchExpenseListByValue = async (req, res) => { //Para pedir el listado de categorias
+        const { user } = req //Este user viene dado por el checkAuth
+        const { minValue, maxValue, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
+        console.log(req.params)
+        console.log(minValue + maxValue)
+        if(maxValue<minValue){
+            return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
+        }
+        const expenseList = await ExpenseList.aggregate([
+            {$match: {userID: `${user._id}`}},
+            {$project:{
+                expenses:{
+                    $filter:{
+                        input:`$expenses`,
+                        as: `item`,
+                        cond: {
+                            $or:[
+                                {$and: [
+                                    {"$gte": [
+                                        "$$item.value",
+                                        parseInt(minValue)
+                                    ]},
+                                    {"$lt": [
+                                        "$$item.value",
+                                        parseInt(maxValue)
+                                    ]}
+                                ]},
+                                {$eq:["$$item.value",
+                                parseInt(minValue)]},
+                                {$eq:["$$item.value",
+                                parseInt(maxValue)]}
+                            ]
+                        }
+                    }
+                }
+            }},
+            {$unwind:"$expenses"},
+            {$sort:{[`expenses.${sortBy}`]:parseInt(desc)}},
+            { $facet: {
+                "expenses": [
+                  { $skip: (page-1)*limit },
+                  { $limit: parseInt(limit)},
+                  { $group:{"_id":"$_id", "expenses":{$push:"$expenses"}}}
+                ],
+                "totalCount": [
+                  { $count: "count" }
+                ]
+            }}
+        ])
+        const results = expenseList[0]
+        if(results.totalCount.length === 0){
+            return res.status(400).json({msg: "No hay ningun gasto con ese valor" , error:true})
+        }
+        if(Math.ceil(results.totalCount[0].count/limit) < page) {
+            return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
+        }
+        if (results){
+            return res.status(200).json(results)
+        }else{
+            return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
+        }}
 
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName}
+
+
+
+
+
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName, searchExpenseListByValue}
 
 
 
