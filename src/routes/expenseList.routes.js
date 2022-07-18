@@ -4,8 +4,7 @@ import {
     changeExpense, 
     getExpenseList, 
     removeExpense, 
-    searchExpenseListByName,
-    searchExpenseListByName2
+    searchExpenseListByName
 } from "../controllers/expenseLists.controllers.js";
 import checkAuth from "../middleware/checkAuth.js";
 
@@ -16,7 +15,7 @@ expenseListRouter.post("/", checkAuth, addExpense)
 expenseListRouter.delete("/", checkAuth, removeExpense)
 expenseListRouter.patch("/", checkAuth, changeExpense)
 expenseListRouter.get("/searchByName/search=:search&page=:page&limit=:limit&sortBy=:sortBy&desc=:desc", checkAuth, searchExpenseListByName)
-expenseListRouter.get("/searchByName2/search=:search&page=:page&limit=:limit&sortBy=:sortBy&desc=:desc", checkAuth, searchExpenseListByName2)
+
 
 
 
