@@ -1,6 +1,7 @@
 
 
 export default async function paramsHandler (req, res, next) {
+    const regex = /\d\d\d\d-\d\d-\d\d/;
     if(!req.params.page){
         req.params.page = 1
     }
@@ -22,6 +23,11 @@ export default async function paramsHandler (req, res, next) {
     if(req.params.desc !== "1" && req.params.desc !=="-1"){
         return res.status(400).json({msg: "El valor permitido para desc es 1 y -1" , error:true})
     }
+
+    if(req.params.maxValue<req.params.minValue){
+        return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
+    }
+
     if(!req.params.minValue){
         req.params.minValue = 0
     }
@@ -31,5 +37,23 @@ export default async function paramsHandler (req, res, next) {
     if(isNaN(parseInt(req.params.minValue))  || isNaN(parseInt(req.params.maxValue))){
         return res.status(400).json({msg: "El valor mínimo o máximo debe ser un número" , error:true})
     } /// Probablemente alguien me putee por poner tantos ifs.
+
+    if (req.params.maxDate || req.params.minDate){
+        if(!req.params.minDate && req.params.maxDate){
+            req.params.minDate = "1900-01-01"
+        }
+        if(!req.params.maxDate && req.params.minDate){
+            var hoy = new Date();
+            hoy.setDate(hoy.getDate()+1) //Lo pongo el dia siguiente para incluir los gastos del presente dia
+            var dd = String(hoy.getDate()).padStart(2, '0');
+            var mm = String(hoy.getMonth() + 1).padStart(2, '0'); //enero es 0
+            var yyyy = hoy.getFullYear();
+            hoy = `${yyyy}-${mm}-${dd}`
+            req.params.maxDate = hoy
+        }
+        if(!regex.test(req.params.minDate)||!regex.test(req.params.maxDate)){
+            return res.status(400).json({msg: "El formato para fechas debe ser yyyy-mm-dd" , error:true})
+        }
+    }
     next()
 }
