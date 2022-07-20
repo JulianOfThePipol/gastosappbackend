@@ -110,8 +110,135 @@ const changeExpense = async (req, res) => {
     }
 }
 
+const searchExpense = async (req, res) => { //Para pedir el listado de categorias
+    const { user } = req //Este user viene dado por el checkAuth
+    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
+    console.log(req.params)
+    const regex = new RegExp(search,'i')
+    console.log(Boolean(parseInt(maxValue)))
+    const expenseList = await ExpenseList.aggregate([
+        {$match: {userID: `${user._id}`}},
+        {$project:{
+            expenses:{
+                $filter:{
+                    input:`$expenses`,
+                    as: `item`,
+                    cond:{$and: [
+                        {$regexFind:{input: "$$item.name", regex: regex}},//Buscamos por nombre, si no hay nombre devuelve todo.
+                        (minValue || maxValue)&&{$or:[ // Este se encarga de filtrar por rango
+                            {$and: [
+                                {"$gte": [
+                                    "$$item.value",
+                                    parseInt(minValue)//Checkeamos que sea mas grande que el valor minimo
+                                ]},
+                                parseInt(maxValue)?{"$lt": [
+                                    "$$item.value",
+                                    parseInt(maxValue)//Checkeamos que sea mas chico que el valor máximo. Si no hay valor devuelve todo.
+                                ]}:{}
+                            ]},
+                            {$eq:["$$item.value",
+                            parseInt(minValue)]},//Checkeamos si es === a los valores extremos, míninmo y máximo
+                            parseInt(maxValue)&&{$eq:["$$item.value",
+                            parseInt(maxValue)]}
+                        ]},
+                        (minDate || maxDate)&&{$or:[ //Este se encarga de filtrar por fecha
+                            {$and: [
+                                {"$gte": [
+                                    "$$item.date",
+                                    {
+                                        $dateFromString: {
+                                            dateString: minDate,
+                                            format: "%Y-%m-%d"
+                                        }
+                                    }//Checkeamos que sea mas grande que el valor minimo
+                                ]},
+                                parseInt(maxValue)?{"$lt": [ "$$item.date",
+                                {
+                                    $dateFromString: {
+                                        dateString: maxDate,
+                                        format: "%Y-%m-%d"
+                                    }
+                                }//Checkeamos que sea mas chico que el valor máximo. Si no hay valor devuelve todo.
+                                ]}:{}
+                            ]},
+                            {$eq:["$$item.date",
+                            {
+                                $dateFromString: {
+                                    dateString: minDate,
+                                    format: "%Y-%m-%d"
+                                }
+                            }]},//Checkeamos si es === a los valores extremos, mínimo y máximo
+                           {$eq:["$$item.date",
+                            {
+                                $dateFromString: {
+                                    dateString: maxDate,
+                                    format: "%Y-%m-%d"
+                                }
+                            }]}
+                        ]}
+                    ]}
+                }
+            }
+        }},
+        {$unwind:"$expenses"},
+        {$sort:{[sortBy?`expenses.${sortBy}`:"expenses.name"]:parseInt(desc)}},
+        { "$facet": {
+            "expenses": [
+                { "$skip": (page-1)*limit }, // El skip y limit estan para la paginación
+                { "$limit": parseInt(limit)},
+                {"$group":{"_id":"$_id", "expenses":{"$push":"$expenses"}, "regexMatch":{"$push":"$regexMatch"}}}
+            ],
+            "totalCount": [
+                { "$count": "count" } //Total count para ayudar a hacer la paginación en el frontend
+            ]
+        }}
+    ])
+    const results = expenseList[0]
+    if(results.totalCount.length === 0){
+        return res.status(400).json({msg: "No hay ningun resultado para esta búsqueda" , error:true})
+    }
+    if(Math.ceil(results.totalCount[0].count/limit) < page) {
+        return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
+    }
+    if (results){
+        return res.status(200).json(results)
+    }else{
+        return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
+    }
+}
 
-const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
+
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense}
+
+
+
+/* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
+    const {user} = req //Este user viene dado por el checkAuth
+    const { search, page, limit, sortBy, desc } = req.params
+    console.log(req.params)
+    const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
+    if (!expenseList){
+        res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
+    }
+    const searchedList = expenseList.expenses.filter(expense => expense.name.includes(search))
+    if(searchedList.length === 0) {
+        return res.status(400).json({msg: "No hay ningun gasto que contenga ese nombre" , error:true})
+    }
+    if (Math.ceil(searchedList.length/limit) < page) {
+        return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
+    }
+    const sortedList = sortArray(searchedList, sortBy, desc)
+    const totalItems = searchedList.length
+    const limitList = sortedList.splice((page-1)*limit,limit)
+  
+    
+    if (limitList){
+        return res.status(200).json({results:limitList, totalItems: totalItems, currentItems: limitList.length})
+    } 
+} */ //este hermoso snippet de código era una solución alternativa, aunque poco performante para realizar la busqueda. Basicamente realiza todo con javascript. Me daba lástima eliminarlo.
+
+
+/* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
     const { search, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
     console.log(req.params)
@@ -128,12 +255,12 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
             }
         }},
         {$unwind:"$expenses"},
-        {$sort:{[`expenses.${sortBy}`]:parseInt(desc)}},
+        {$sort:{[sortBy?`expenses.${sortBy}`:"expenses.name"]:parseInt(desc)}},
         { "$facet": {
             "expenses": [
               { "$skip": (page-1)*limit },
               { "$limit": parseInt(limit)},
-              {"$group":{"_id":"$_id", "expenses":{"$push":"$expenses"}}}
+              {"$group":{"_id":"$_id", "expenses":{"$push":"$expenses"}, "regexMatch":{"$push":"$regexMatch"}}}
             ],
             "totalCount": [
               { "$count": "count" }
@@ -158,7 +285,6 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
         const { user } = req //Este user viene dado por el checkAuth
         const { minValue, maxValue, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
         console.log(req.params)
-        console.log(minValue + maxValue)
         if(maxValue<minValue){
             return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
         }
@@ -213,39 +339,5 @@ const searchExpenseListByName = async (req, res) => { //Para pedir el listado de
         if (results){
             return res.status(200).json(results)
         }else{
-            return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
-        }}
-
-
-
-
-
-
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpenseListByName, searchExpenseListByValue}
-
-
-
-/* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
-    const {user} = req //Este user viene dado por el checkAuth
-    const { search, page, limit, sortBy, desc } = req.params
-    console.log(req.params)
-    const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
-    if (!expenseList){
-        res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
-    }
-    const searchedList = expenseList.expenses.filter(expense => expense.name.includes(search))
-    if(searchedList.length === 0) {
-        return res.status(400).json({msg: "No hay ningun gasto que contenga ese nombre" , error:true})
-    }
-    if (Math.ceil(searchedList.length/limit) < page) {
-        return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
-    }
-    const sortedList = sortArray(searchedList, sortBy, desc)
-    const totalItems = searchedList.length
-    const limitList = sortedList.splice((page-1)*limit,limit)
-  
-    
-    if (limitList){
-        return res.status(200).json({results:limitList, totalItems: totalItems, currentItems: limitList.length})
-    } 
-} */ //este hermoso snippet de código era una solución alternativa, aunque poco performante para realizar la busqueda. Basicamente realiza todo con javascript. Me daba lástima eliminarlo.
+            return res.status(400).json({msg:"Error crítico, por favor, comuniquesé con algún administrador", error:true})
+        }} */
