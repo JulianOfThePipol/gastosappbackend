@@ -1,4 +1,4 @@
-import { CategoryList } from "../models/index.js";
+import { CategoryList, ExpenseList } from "../models/index.js";
 
 const getCategoryList = async (req, res) => { //Para pedir el listado de categorias
     const {user} = req //Este user viene dado por el checkAuth
@@ -40,25 +40,40 @@ const removeCategory = async (req, res) => {
     const categoryExists = categoryList.categories.findIndex(category => category.name === categoryName); //Aca nos aseguramos que la categoria exista, y extraemos su index
     console.log(categoryExists) //sacar
     if(categoryExists !== -1){
-        console.log(categoryList.categories.categoryExists)
-        categoryList.categories.splice(categoryExists, 1) //Sacamos la categoria del listado
+        const expenseList = await ExpenseList.aggregate([
+            {$match: {userID: `${user._id}`}},
+            {$project:{
+                expenses:{
+                    $filter:{
+                        input:`$expenses`,
+                        as: `item`,
+                        cond:{$eq:["$$item.categoryID", categoryList.categories[categoryExists]._id.toString()]
+                        }
+                    }
+                }
+            }}
+        ]);
+        if (expenseList[0].expenses.length !== 0){
+            return res.status(400).json({msg:"Hay gastos en esta categoria, por favor, eliminelos, o cambielos de categoria", error:true})
+        }
+        categoryList.categories.splice(categoryExists, 1); //Sacamos la categoria del listado
         try { 
             await categoryList.save(); //Guardamos el listado
             res.status(201).json({msg: "Categoria eliminada exitosamente"}); //Le puse un 201 en vez de un 204 para poder mandar un json de respuesta, personalmente prefiero ver que reciba algo
         } catch (error) {
-            return res.status(409).json({msg: `Ocurrió un error: ${error}` , error: true})
+            return res.status(409).json({msg: `Ocurrió un error: ${error}` , error: true});
         }
     } else {
-        return res.status(400).json({msg:"La categoria no existe" , error: true})
+        return res.status(400).json({msg:"La categoria no existe" , error: true});
     }
 }
 
 const changeCategory = async (req, res) => {
-    const { user } = req
-    const { categoryName, newCategoryName, newCategoryColor } = req.body
-    const categoryList = await CategoryList.findOne({userID: user._id})
+    const { user } = req;
+    const { categoryName, newCategoryName, newCategoryColor } = req.body;
+    const categoryList = await CategoryList.findOne({userID: user._id});
     if (!categoryList){
-        res.status(400).json({ msg: "Listado de categorias no encontrado" , error: true})
+        res.status(400).json({ msg: "Listado de categorias no encontrado" , error: true});
     }
     if(!newCategoryName && !newCategoryColor) {
         return res.status(400).json({msg: "No hay cambios a realizar" , error: true})
