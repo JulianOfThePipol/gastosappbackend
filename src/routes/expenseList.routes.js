@@ -15,7 +15,7 @@ expenseListRouter.get("/", checkAuth, getExpenseList)
 expenseListRouter.post("/", checkAuth, addExpense)
 expenseListRouter.delete("/", checkAuth, removeExpense)
 expenseListRouter.patch("/", checkAuth, changeExpense)
-expenseListRouter.get("/search/search=:search?&minValue=:minValue?&maxValue=:maxValue?&page=:page?&limit=:limit?&sortBy=:sortBy?&desc=:desc?&minDate=:minDate?&maxDate=:maxDate?", checkAuth, paramsHandler, searchExpense)
+expenseListRouter.get("/search/search=:search?&minValue=:minValue?&maxValue=:maxValue?&page=:page?&limit=:limit?&sortBy=:sortBy?&desc=:desc?&minDate=:minDate?&maxDate=:maxDate?&categoryID=:categoryID?", checkAuth, paramsHandler, searchExpense)
 
 
 

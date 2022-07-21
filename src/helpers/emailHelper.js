@@ -14,7 +14,7 @@ const emailTemplateConfirmed = (name, token) => `<!DOCTYPE html>
   <body>
     <p>Hola ${name}, por favor, confirmá tu email</p>
     <p> Tu cuenta está casi lista</p>
-    <button><a href="https://gastos-cvi5p39iy-leosebas.vercel.app/confirmed/${token}"> Click Here </a></button>
+    <button><a href="https://gastos-app-develop.vercel.app/confirmed/${token}"> Click Here </a></button>
     <p> Si no te registraste en APPGASTOS, podes ignorar este email </p>
    
   </body>
@@ -31,7 +31,7 @@ const emailTemplateForgot = (name, token) => `<!DOCTYPE html>
   </head>
   <body>
     <p>Hola ${name}, te enviamos este email para reestablecer tu contraseña</p>
-    <button><a href="https://gastos-cvi5p39iy-leosebas.vercel.app/forgot/${token}"> Por favor, clickea aquí </a></button>
+    <button><a href="https://gastos-app-develop.vercel.app/forgot/${token}"> Por favor, clickea aquí </a></button>
     <p> Si no olvidaste tu contraseña, podes ignorar este email </p>
    
   </body>
