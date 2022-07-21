@@ -112,7 +112,7 @@ const changeExpense = async (req, res) => {
 
 const searchExpense = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
-    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
+    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc, categoryID } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
     console.log(req.params)
     const regex = new RegExp(search,'i')
     console.log(Boolean(parseInt(maxValue)))
@@ -125,6 +125,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                     as: `item`,
                     cond:{$and: [
                         {$regexFind:{input: "$$item.name", regex: regex}},//Buscamos por nombre, si no hay nombre devuelve todo.
+                        
                         (minValue || maxValue)&&{$or:[ // Este se encarga de filtrar por rango
                             {$and: [
                                 {"$gte": [
@@ -141,6 +142,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                             parseInt(maxValue)&&{$eq:["$$item.value",
                             parseInt(maxValue)]}
                         ]},
+
                         (minDate || maxDate)&&{$or:[ //Este se encarga de filtrar por fecha
                             {$and: [
                                 {"$gte": [
@@ -175,7 +177,13 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                                     format: "%Y-%m-%d"
                                 }
                             }]}
-                        ]}
+                        ]},
+
+                        (categoryID)?{//Filtramos por categoría
+                            $eq:["$$item.categoryID",
+                            categoryID]
+
+                        }:{}
                     ]}
                 }
             }

@@ -1,3 +1,4 @@
+import  CategoryList  from "../models/CategoryList.js";
 
 
 export default async function paramsHandler (req, res, next) {
@@ -55,5 +56,19 @@ export default async function paramsHandler (req, res, next) {
             return res.status(400).json({msg: "El formato para fechas debe ser yyyy-mm-dd" , error:true})
         }
     }
+
+    if(req.params.categoryID){
+        const { user } = req
+        const categoryList = await CategoryList.findOne({userID: user._id})
+        if (!categoryList){
+        res.status(400).json({ msg: "Listado de categorias no encontrado" , error: true})
+        }
+        const categoryExists = categoryList.categories.findIndex(category => category._id.toString() === req.params.categoryID);
+        if(categoryExists === -1){
+            return res.status(400).json({msg: "Categoría no encontrada", error: true})
+        }
+    }
+
+
     next()
 }
