@@ -73,7 +73,7 @@ const authenticate = async (req, res) => {
     if (await user.checkPassword(password)) {
         
         if (!user.confirmed) {
-            return res.status(400).json({msg: "El email del usuario no está confirmado", error: true})
+            return res.status(400).json({msg: "Usuario no está confirmado", error: true})
         }
 
         console.log(user) //Sacar
