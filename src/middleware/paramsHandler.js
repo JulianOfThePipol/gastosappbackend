@@ -69,6 +69,5 @@ export default async function paramsHandler (req, res, next) {
         }
     }
 
-
     next()
 }
