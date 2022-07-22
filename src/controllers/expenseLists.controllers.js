@@ -126,24 +126,18 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                     cond:{$and: [
                         (search)?{$regexFind:{input: "$$item.name", regex: regex}}:{$eq:["$$item.name","$$item.name"]},//Buscamos por nombre, si no hay nombre devuelve todo.
                         
-                        (minValue || maxValue )?{$or:[ // Este se encarga de filtrar por rango
-                            {$and: [
+                        (minValue || maxValue )?{$and: [
                                 {"$gte": [
                                     "$$item.value",
                                     parseInt(minValue)//Checkeamos que sea mas grande que el valor minimo
                                 ]},
-                                parseInt(maxValue)?{"$lt": [
+                                parseInt(maxValue)?{"$lte": [
                                     "$$item.value",
                                     parseInt(maxValue)//Checkeamos que sea mas chico que el valor máximo. Si no hay valor devuelve todo.
                                 ]}:{}
-                            ]},
-                            {$eq:["$$item.value",
-                            parseInt(minValue)]},//Checkeamos si es === a los valores extremos, míninmo y máximo
-                            parseInt(maxValue)&&{$eq:["$$item.value",
-                            parseInt(maxValue)]}
-                        ]}:{},
+                            ]}:{},
 
-                        (minDate || maxDate)?{$or:[ //Este se encarga de filtrar por fecha
+                        (minDate || maxDate)? //Este se encarga de filtrar por fecha
                             {$and: [
                                 {"$gte": [
                                     "$$item.date",
@@ -154,35 +148,19 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                                         }
                                     }//Checkeamos que sea mas grande que el valor minimo
                                 ]},
-                                parseInt(maxValue)?{"$lt": [ "$$item.date",
+                                maxDate?{"$lte": [ "$$item.date",
                                 {
                                     $dateFromString: {
                                         dateString: maxDate,
                                         format: "%Y-%m-%d"
                                     }
-                                }//Checkeamos que sea mas chico que el valor máximo. Si no hay valor devuelve todo.
+                                }//Si no hay valor, devuelve sin limite máximo de fecha
                                 ]}:{}
-                            ]},
-                            {$eq:["$$item.date",
-                            {
-                                $dateFromString: {
-                                    dateString: minDate,
-                                    format: "%Y-%m-%d"
-                                }
-                            }]},//Checkeamos si es === a los valores extremos, mínimo y máximo
-                           {$eq:["$$item.date",
-                            {
-                                $dateFromString: {
-                                    dateString: maxDate,
-                                    format: "%Y-%m-%d"
-                                }
-                            }]}
-                        ]}:{},
+                            ]}:{},
 
                         (categoryID)?{//Filtramos por categoría
                             $eq:["$$item.categoryID",
                             categoryID]
-
                         }:{}
                     ]}
                 }
@@ -348,4 +326,4 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense}
             return res.status(200).json(results)
         }else{
             return res.status(400).json({msg:"Error crítico, por favor, comuniquesé con algún administrador", error:true})
-        }} */
+        }} */ // En un principio los controladores iban a estar divididos.

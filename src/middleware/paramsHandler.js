@@ -24,20 +24,20 @@ export default async function queryHandler (req, res, next) {
     if(req.query.desc !== "1" && req.query.desc !=="-1"){
         return res.status(400).json({msg: "El valor permitido para desc es 1 y -1" , error:true})
     }
-
+    
+    if(req.query.minValue || req.query.minValue===0 || req.query.maxValue){
+        if(!req.query.minValue && req.query.minValue !==0 ){
+            req.query.minValue = 0
+        }
+        if(!req.query.maxValue){
+            req.query.maxValue = req.query.minValue
+        }
+        if(isNaN(parseInt(req.query.minValue))  || isNaN(parseInt(req.query.maxValue))){
+            return res.status(400).json({msg: "El valor mínimo o máximo debe ser un número" , error:true})
+    }} /// Probablemente alguien me putee por poner tantos ifs.
     if(req.query.maxValue<req.query.minValue){
         return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
     }
-
-    if(!req.query.minValue){
-        req.query.minValue = 0
-    }
-    if(!req.query.maxValue){
-        req.query.maxValue = req.query.minValue
-    }
-    if(isNaN(parseInt(req.query.minValue))  || isNaN(parseInt(req.query.maxValue))){
-        return res.status(400).json({msg: "El valor mínimo o máximo debe ser un número" , error:true})
-    } /// Probablemente alguien me putee por poner tantos ifs.
 
     if (req.query.maxDate || req.query.minDate){
         if(!req.query.minDate && req.query.maxDate){
