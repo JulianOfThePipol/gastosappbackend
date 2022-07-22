@@ -112,10 +112,10 @@ const changeExpense = async (req, res) => {
 
 const searchExpense = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
-    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc, categoryID } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
-    console.log(req.params)
+    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc, categoryID } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1
+    console.log(req.query)
     const regex = new RegExp(search,'i')
-    console.log(Boolean(parseInt(maxValue)))
+    console.log(search)
     const expenseList = await ExpenseList.aggregate([
         {$match: {userID: `${user._id}`}},
         {$project:{
@@ -124,9 +124,9 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                     input:`$expenses`,
                     as: `item`,
                     cond:{$and: [
-                        {$regexFind:{input: "$$item.name", regex: regex}},//Buscamos por nombre, si no hay nombre devuelve todo.
+                        (search)?{$regexFind:{input: "$$item.name", regex: regex}}:{$eq:["$$item.name","$$item.name"]},//Buscamos por nombre, si no hay nombre devuelve todo.
                         
-                        (minValue || maxValue)&&{$or:[ // Este se encarga de filtrar por rango
+                        (minValue || maxValue )?{$or:[ // Este se encarga de filtrar por rango
                             {$and: [
                                 {"$gte": [
                                     "$$item.value",
@@ -141,9 +141,9 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                             parseInt(minValue)]},//Checkeamos si es === a los valores extremos, míninmo y máximo
                             parseInt(maxValue)&&{$eq:["$$item.value",
                             parseInt(maxValue)]}
-                        ]},
+                        ]}:{},
 
-                        (minDate || maxDate)&&{$or:[ //Este se encarga de filtrar por fecha
+                        (minDate || maxDate)?{$or:[ //Este se encarga de filtrar por fecha
                             {$and: [
                                 {"$gte": [
                                     "$$item.date",
@@ -177,7 +177,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
                                     format: "%Y-%m-%d"
                                 }
                             }]}
-                        ]},
+                        ]}:{},
 
                         (categoryID)?{//Filtramos por categoría
                             $eq:["$$item.categoryID",
@@ -222,8 +222,8 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense}
 
 /* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const {user} = req //Este user viene dado por el checkAuth
-    const { search, page, limit, sortBy, desc } = req.params
-    console.log(req.params)
+    const { search, page, limit, sortBy, desc } = req.query
+    console.log(req.query)
     const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
     if (!expenseList){
         res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
@@ -248,8 +248,8 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense}
 
 /* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
-    const { search, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
-    console.log(req.params)
+    const { search, page, limit, sortBy, desc } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1
+    console.log(req.query)
     const regex = new RegExp(search,'i')
     const expenseList = await ExpenseList.aggregate([
         {$match: {userID: `${user._id}`}},
@@ -291,8 +291,8 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense}
 
     const searchExpenseListByValue = async (req, res) => { //Para pedir el listado de categorias
         const { user } = req //Este user viene dado por el checkAuth
-        const { minValue, maxValue, page, limit, sortBy, desc } = req.params //sortBy puede ser value, date o name, desc puede ser 1 o -1
-        console.log(req.params)
+        const { minValue, maxValue, page, limit, sortBy, desc } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1
+        console.log(req.query)
         if(maxValue<minValue){
             return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
         }
