@@ -172,7 +172,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
             "expenses": [
                 { "$skip": (page-1)*limit }, // El skip y limit estan para la paginación
                 { "$limit": parseInt(limit)},
-                {"$group":{"_id":"$_id", "expenses":{"$push":"$expenses"}, "regexMatch":{"$push":"$regexMatch"}}}
+                {"$group":{"expenses":{"$push":"$expenses"}}}
             ],
             "totalCount": [
                 { "$count": "count" } //Total count para ayudar a hacer la paginación en el frontend
