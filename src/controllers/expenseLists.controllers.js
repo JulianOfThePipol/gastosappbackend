@@ -172,7 +172,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
             "expenses": [
                 { "$skip": (page-1)*limit }, // El skip y limit estan para la paginación
                 { "$limit": parseInt(limit)},
-                {"$group":{"expenses":{"$push":"$expenses"}}}
+                {"$group":{"_id":"$_id","expenses":{"$push":"$expenses"}}}
             ],
             "totalCount": [
                 { "$count": "count" } //Total count para ayudar a hacer la paginación en el frontend
@@ -187,7 +187,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
         return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
     }
     if (results){
-        return res.status(200).json(results)
+        return res.status(200).json({expenses:results.expenses[0].expenses, totalItems:results.totalCount[0].count})
     }else{
         return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
     }
