@@ -36,7 +36,7 @@ export default async function queryHandler (req, res, next) {
         if(isNaN(parseInt(req.query.minValue))  || isNaN(parseInt(req.query.maxValue))){
             return res.status(400).json({msg: "El valor mínimo o máximo debe ser un número" , error:true})
     }} /// Probablemente alguien me putee por poner tantos ifs.
-    if(req.query.maxValue<req.query.minValue){
+    if(parseInt(req.query.maxValue)<parseInt(req.query.minValue)){
         return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
     }
 
