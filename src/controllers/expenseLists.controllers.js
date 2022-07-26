@@ -1,7 +1,7 @@
 import { CategoryList, ExpenseList } from "../models/index.js";
 
 
-const getExpenseList = async (req, res) => { //Para pedir el listado de categorias
+const getExpenseList = async (req, res) => { //Para pedir el listado de gastos. Este controller es solo para QA/Development. No usar en el frontend.
     const {user} = req //Este user viene dado por el checkAuth
     const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
     if (!expenseList){
@@ -11,7 +11,7 @@ const getExpenseList = async (req, res) => { //Para pedir el listado de categori
 }
 
 
-const addExpense = async (req, res) => {
+const addExpense = async (req, res) => { //Esto era una solucion temporal, habria que usar un pipelina como en el caso del search
     const {user} = req
     const { expenseName, expenseValue, expenseDate, categoryName } = req.body
     const expenseList = await ExpenseList.findOne({userID: user._id}) //arrancamos buscando la lista
@@ -31,7 +31,7 @@ const addExpense = async (req, res) => {
     if (!categoryExists) {
         res.status(400).json({ msg: "Categoría no encontrada", error:true})
     } else { 
-    expenseList.expenses.push({name: expenseName, value: expenseValue, date: expenseDate, categoryID: categoryExists._id}) //Agregamos el gasto a la lista
+    expenseList.expenses.push({name: expenseName.charAt(0).toUpperCase()+expenseName.slice(1), value: expenseValue, date: expenseDate, categoryID: categoryExists._id}) //Agregamos el gasto a la lista. Capitalize la primer letra, por cuestiones de search. Problematico, pero una solucion parcial y temporal, si puedo cambiar el collation default habria que eliminarlo.
     try {
         await expenseList.save(); //Guardamos la nueva lista
         res.status(201).json({msg: "Gasto creado exitosamente"});
@@ -42,7 +42,7 @@ const addExpense = async (req, res) => {
 }
 
 
-const removeExpense = async (req, res) => {
+const removeExpense = async (req, res) => { //Esto era una solucion temporal, habria que usar un pipelina como en el caso del search
     const {user} = req
     const { expenseID } = req.body
     const expenseList = await ExpenseList.findOne({userID: user._id})
@@ -65,7 +65,7 @@ const removeExpense = async (req, res) => {
 }
 
 
-const changeExpense = async (req, res) => {
+const changeExpense = async (req, res) => { //Esto era una solucion temporal, habria que usar un pipelina como en el caso del search
     const { user } = req
     const { expenseID, newExpenseName, newExpenseValue, newCategory, newExpenseDate } = req.body
     const expenseList = await ExpenseList.findOne({userID: user._id})
@@ -112,7 +112,7 @@ const changeExpense = async (req, res) => {
 
 const searchExpense = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
-    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc, categoryID } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1
+    const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc, categoryID } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1, values, page y limit son numeros,
     console.log(req.query)
     const regex = new RegExp(search,'i')
     console.log(search)
@@ -167,7 +167,8 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
             }
         }},
         {$unwind:"$expenses"},
-        {$sort:{[sortBy?`expenses.${sortBy}`:"expenses.name"]:parseInt(desc)}},
+        {$sort:{[sortBy?`expenses.${sortBy}`:"expenses.name"]:parseInt(desc)}},// Actualmente, el sortby name devuelve primero los resultados en mayúscula. Habria que ver de cambiar el collation
+        
         { "$facet": {
             "expenses": [
                 { "$skip": (page-1)*limit }, // El skip y limit estan para la paginación

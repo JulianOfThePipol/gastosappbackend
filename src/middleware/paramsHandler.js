@@ -3,6 +3,7 @@ import  CategoryList  from "../models/CategoryList.js";
 
 export default async function queryHandler (req, res, next) {
     const regex = /\d\d\d\d-\d\d-\d\d/;
+    console.log(req.query)
     if(!req.query.page){
         req.query.page = 1
     }
