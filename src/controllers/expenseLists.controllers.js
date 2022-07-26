@@ -188,7 +188,7 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
         return res.status(400).json({msg: "No hay suficientes items para acceder a esta página" , error:true})
     }
     if (results){
-        return res.status(200).json({expenses:results.expenses[0].expenses, totalItems:results.totalCount[0].count})
+        return res.status(200).json({expenses:results.expenses[0].expenses, totalItems:results.totalCount[0].count, totalPages:Math.ceil(results.totalCount[0].count/limit)})
     }else{
         return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
     }

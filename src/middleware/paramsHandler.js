@@ -3,7 +3,6 @@ import  CategoryList  from "../models/CategoryList.js";
 
 export default async function queryHandler (req, res, next) {
     const regex = /\d\d\d\d-\d\d-\d\d/;
-    console.log(req.query)
     if(!req.query.page){
         req.query.page = 1
     }
@@ -30,10 +29,7 @@ export default async function queryHandler (req, res, next) {
         if(!req.query.minValue && req.query.minValue !==0 ){
             req.query.minValue = 0
         }
-        if(!req.query.maxValue){
-            req.query.maxValue = req.query.minValue
-        }
-        if(isNaN(parseInt(req.query.minValue))  || isNaN(parseInt(req.query.maxValue))){
+        if(isNaN(parseInt(req.query.minValue))  || ((isNaN(parseInt(req.query.maxValue) || (!req.query.maxValue)) ))){
             return res.status(400).json({msg: "El valor mínimo o máximo debe ser un número" , error:true})
     }} /// Probablemente alguien me putee por poner tantos ifs.
     if(parseInt(req.query.maxValue)<parseInt(req.query.minValue)){
