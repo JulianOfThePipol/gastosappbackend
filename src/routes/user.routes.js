@@ -22,5 +22,8 @@ userRouter.get("/forgot/:token", checkForgotToken);
 userRouter.post("/forgot/:token", changeForgotPassword);
 userRouter.get("/profile", checkAuth, userProfile);
 userRouter.post("/profile", checkAuth, changeProfile);
+userRouter.get("/checkToken", checkAuth, function (req, res) {
+ return res.status(200).json({notLogged:false});
+})
 
 export default userRouter;
