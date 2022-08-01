@@ -240,7 +240,7 @@ const getTotalExpenses = async (req, res) => { //Para pedir el listado de catego
         {$unwind:"$expenses"},
         { "$facet": {
             "expenses": [
-                {"$group":{"_id":"$_id","totalExpenses":{"$sum":"$expenses.value"}}}
+                {"$group":{"_id":"$expenses.categoryID","totalExpenses":{"$sum":"$expenses.value"}}}
             ],
             "totalCount": [
                 { "$count": "count" } //
@@ -250,7 +250,7 @@ const getTotalExpenses = async (req, res) => { //Para pedir el listado de catego
     ])
     const results = expenseList[0]
     if (results){
-        return res.status(200).json({total:results.expenses[0].totalExpenses, count:results.totalCount[0].count})
+        return res.status(200).json({count:results.totalCount[0].count, expenses:results.expenses})
     }else{
         return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
     }
