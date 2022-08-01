@@ -233,22 +233,14 @@ const getTotalExpenses = async (req, res) => { //Para pedir el listado de catego
                 }
             }
         }},
-        {$unwind:"$expenses"},
-        { "$facet": {
-            "expenses": [
-                {"$group":{"_id":"$expenses.categoryID","totalExpenses":{"$sum":"$expenses.value"}}}
-            ],
-            "totalCount": [
-                { "$count": "count" } //
-            ]
-        }}
-        
+        {$unwind:"$expenses"}, 
+        {"$group":{"_id":"$expenses.categoryID","totalExpenses":{"$sum":"$expenses.value"}}}            
     ])
-    const results = expenseList[0]
+    const results = expenseList
     if (results){
-        return res.status(200).json({count:results.totalCount[0].count, expenses:results.expenses})
+        return res.status(200).json({expenses:results})
     }else{
-        return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
+        return res.status(400).json({msg:"No hay gastos en esta categoría", error:"true"})
     }
 }
 
