@@ -38,7 +38,6 @@ const removeCategory = async (req, res) => {
         res.status(400).json({ msg: "Listado de categorias no encontrado" , error: true})
     }
     const categoryExists = categoryList.categories.findIndex(category => category.name === categoryName); //Aca nos aseguramos que la categoria exista, y extraemos su index
-    console.log(categoryExists) //sacar
     if(categoryExists !== -1){
         const expenseList = await ExpenseList.aggregate([
             {$match: {userID: `${user._id}`}},

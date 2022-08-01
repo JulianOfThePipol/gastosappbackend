@@ -27,7 +27,6 @@ const addExpense = async (req, res) => { //Esto era una solucion temporal, habri
     }
 
     const categoryExists = categoryList.categories.find(category => category.name === categoryName);
-    console.log(categoryExists)
     if (!categoryExists) {
         res.status(400).json({ msg: "Categoría no encontrada", error:true})
     } else { 
@@ -51,7 +50,6 @@ const removeExpense = async (req, res) => { //Esto era una solucion temporal, ha
     }
     const expenseExists = expenseList.expenses.findIndex(expense => expense._id.toString() === expenseID); //Aca nos aseguramos que el gasto exista, y extraemos su index
     if(expenseExists !== -1){
-        console.log(expenseList.expenses.expenseExists)
         expenseList.expenses.splice(expenseExists, 1) //Sacamos la categoria del listado
         try { 
             await expenseList.save(); //Guardamos el listado
@@ -113,9 +111,7 @@ const changeExpense = async (req, res) => { //Esto era una solucion temporal, ha
 const searchExpense = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
     const { search, minValue, maxValue, minDate, maxDate, page, limit, sortBy, desc, categoryID } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1, values, page y limit son numeros,
-    console.log(req.query)
     const regex = new RegExp(search,'i')
-    console.log(search)
     const expenseList = await ExpenseList.aggregate([
         {$match: {userID: `${user._id}`}},
         {$project:{
@@ -256,9 +252,6 @@ const getTotalExpenses = async (req, res) => { //Para pedir el listado de catego
     }
 }
 
-
-
-
 export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense, getTotalExpenses}
 
 
@@ -266,7 +259,6 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense,
 /* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const {user} = req //Este user viene dado por el checkAuth
     const { search, page, limit, sortBy, desc } = req.query
-    console.log(req.query)
     const expenseList = await ExpenseList.findOne({userID: user._id}).select("expenses -_id") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
     if (!expenseList){
         res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
@@ -292,7 +284,6 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense,
 /* const searchExpenseListByName = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
     const { search, page, limit, sortBy, desc } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1
-    console.log(req.query)
     const regex = new RegExp(search,'i')
     const expenseList = await ExpenseList.aggregate([
         {$match: {userID: `${user._id}`}},
@@ -335,7 +326,6 @@ export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense,
     const searchExpenseListByValue = async (req, res) => { //Para pedir el listado de categorias
         const { user } = req //Este user viene dado por el checkAuth
         const { minValue, maxValue, page, limit, sortBy, desc } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1
-        console.log(req.query)
         if(maxValue<minValue){
             return res.status(400).json({msg: "Valor mínimo no puede ser mayor a valor máximo" , error:true})
         }

@@ -76,7 +76,6 @@ const authenticate = async (req, res) => {
             return res.status(400).json({msg: "Usuario no está confirmado", error: true})
         }
 
-        console.log(user) //Sacar
         return res.json({
             _id: user._id,
             name: user.name,
@@ -92,8 +91,6 @@ const authenticate = async (req, res) => {
 const confirmUser = async (req, res) => {
     const { token } = req.params; //extraemos el token de la url
     const userConfirmed = await User.findOne ({tokenConfirm: token})
-    console.log(token) //Sacar
-    console.log(userConfirmed) //Sacar
     if (!userConfirmed){
         return res.status(400).json({msg: "Token incorrecto", error:true}); //Hay que hacer una view para el caso de que se ingrese a una página con token incorrecto. O usar 
     }
@@ -175,15 +172,12 @@ const changeForgotPassword = async (req, res) => {
 
 const userProfile = async (req, res) =>{
     const { user } = req;
-    console.log(user) //Sacar
     const fullUser = await User.findById(user._id).select("-password -tokenForgot -tokenConfirm -isDeleted -confirmed  -updatedAt -__v");
-    console.log("Logueado en el perfil de "+ fullUser.name) //Sacar
     res.json(fullUser)
 }
 
 const changeProfile = async (req, res) =>{
     const { user } = req;
-    console.log("En controlador de cambio de nombre para el usuario" + user.name);
     const { name, lastName, birthday} = req.body;
     const fullUser = await User.findById(user._id);
     if (name === fullUser.name && lastName === fullUser.lastName){
