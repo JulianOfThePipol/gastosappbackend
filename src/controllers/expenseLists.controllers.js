@@ -194,8 +194,72 @@ const searchExpense = async (req, res) => { //Para pedir el listado de categoria
     }
 }
 
+const getTotalExpenses = async (req, res) => { //Para pedir el listado de categorias
+    const { user } = req //Este user viene dado por el checkAuth
+    const { minDate, maxDate, categoryID } = req.query //sortBy puede ser value, date o name, desc puede ser 1 o -1, values, page y limit son numeros,
+    console.log(req.query)
 
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense}
+    const expenseList = await ExpenseList.aggregate([
+        {$match: {userID: `${user._id}`}},
+        {$project:{
+            expenses:{
+                $filter:{
+                    input:`$expenses`,
+                    as: `item`,
+                    cond:{$and: [
+                    
+                        (minDate || maxDate)? //Este se encarga de filtrar por fecha
+                            {$and: [
+                                {"$gte": [
+                                    "$$item.date",
+                                    {
+                                        $dateFromString: {
+                                            dateString: minDate,
+                                            format: "%Y-%m-%d"
+                                        }
+                                    }//Checkeamos que sea mas grande que el valor minimo
+                                ]},
+                                maxDate?{"$lte": [ "$$item.date",
+                                {
+                                    $dateFromString: {
+                                        dateString: maxDate,
+                                        format: "%Y-%m-%d"
+                                    }
+                                }//Si no hay valor, devuelve sin limite máximo de fecha
+                                ]}:{}
+                            ]}:{},
+
+                        (categoryID)?{//Filtramos por categoría
+                            $eq:["$$item.categoryID",
+                            categoryID]
+                        }:{}
+                    ]}
+                }
+            }
+        }},
+        {$unwind:"$expenses"},
+        { "$facet": {
+            "expenses": [
+                {"$group":{"_id":"$_id","totalExpenses":{"$sum":"$expenses.value"}}}
+            ],
+            "totalCount": [
+                { "$count": "count" } //
+            ]
+        }}
+        
+    ])
+    const results = expenseList[0]
+    if (results){
+        return res.status(200).json({total:results.expenses[0].totalExpenses, count:results.totalCount[0].count})
+    }else{
+        return res.status(400).json("Error crítico, por favor, comuniquesé con algún administrador")
+    }
+}
+
+
+
+
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense, getTotalExpenses}
 
 
 

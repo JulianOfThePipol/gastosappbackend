@@ -3,6 +3,7 @@ import {
     addExpense, 
     changeExpense, 
     getExpenseList, 
+    getTotalExpenses, 
     removeExpense, 
     searchExpense, 
 } from "../controllers/expenseLists.controllers.js";
@@ -16,6 +17,7 @@ expenseListRouter.post("/", checkAuth, addExpense)
 expenseListRouter.delete("/", checkAuth, removeExpense)
 expenseListRouter.patch("/", checkAuth, changeExpense)
 expenseListRouter.get("/search", checkAuth, paramsHandler, searchExpense)
+expenseListRouter.get("/getExpenses", checkAuth, paramsHandler, getTotalExpenses)
 
 /* search=:search?&minValue=:minValue?&maxValue=:maxValue?&page=:page?&limit=:limit?&sortBy=:sortBy?&desc=:desc?&minDate=:minDate?&maxDate=:maxDate?&categoryID=:categoryID? */
 

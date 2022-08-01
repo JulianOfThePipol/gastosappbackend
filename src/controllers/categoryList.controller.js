@@ -106,8 +106,6 @@ const changeCategory = async (req, res) => {
     } else {
         return res.status(400).json({msg:"La categoria no existe" , error: true})
     }
-
-
 }
 
 export { getCategoryList, addCategory, removeCategory, changeCategory }
