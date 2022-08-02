@@ -1,4 +1,5 @@
 import { CategoryList, ExpenseList } from "../models/index.js";
+import {arrangeAggregate, getFirstAndLastDay} from "../helpers/months.js";
 
 
 const getExpenseList = async (req, res) => { //Para pedir el listado de gastos. Este controller es solo para QA/Development. No usar en el frontend.
@@ -244,7 +245,33 @@ const getTotalExpenses = async (req, res) => { //Para pedir el listado de catego
     }
 }
 
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense, getTotalExpenses}
+const getExpensesPerMonth = async (req, res) => { //Para pedir el listado de categorias
+    const { user } = req //Este user viene dado por el checkAuth
+     //sortBy puede ser value, date o name, desc puede ser 1 o -1, values, page y limit son numeros,
+    var months = getFirstAndLastDay()
+    var monthsPipeline= arrangeAggregate()
+
+    const expenseList = await ExpenseList.aggregate([
+        {$match: {userID: `${user._id}`}},
+
+        { "$facet": 
+           arrangeAggregate()
+                
+        },
+              
+    ])
+    const results = expenseList[0]
+    if (results){
+        return res.status(200).json({expenses:expenseList})
+    }else{
+        return res.status(400).json({msg:"No se encontraron gastos en el presente año", error:"true"})
+    }
+}
+
+
+
+
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense, getTotalExpenses, getExpensesPerMonth}
 
 
 
