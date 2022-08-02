@@ -247,9 +247,6 @@ const getTotalExpenses = async (req, res) => { //Para pedir el listado de catego
 
 const getExpensesPerMonth = async (req, res) => { //Para pedir el listado de categorias
     const { user } = req //Este user viene dado por el checkAuth
-     //sortBy puede ser value, date o name, desc puede ser 1 o -1, values, page y limit son numeros,
-    var months = getFirstAndLastDay()
-    var monthsPipeline= arrangeAggregate()
 
     const expenseList = await ExpenseList.aggregate([
         {$match: {userID: `${user._id}`}},
