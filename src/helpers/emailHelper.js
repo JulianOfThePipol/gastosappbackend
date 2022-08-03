@@ -354,7 +354,7 @@ ul.social li{
             		<td>
             			<div class="text" style="padding: 0 2.5em; text-align: center;">
                   <p>Hola ${name}, te enviamos este email para confirmar tu cuenta</p>
-            				<button><a href="https://gastos-app-develop.vercel.app/forgot/${token}"> Por favor, clickea aquí </a></button>
+            				<button><a href="https://gastos-app-develop.vercel.app/confirmed/${token}"> Por favor, clickea aquí </a></button>
             			</div>
             		</td>
             	</tr>
@@ -384,7 +384,7 @@ ul.social li{
                       <td style="text-align: left; padding-left: 5px; padding-right: 5px;">
                       	<h3 class="heading">Contact Info</h3>
                       	<ul>
-					                <li><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+					                <li><span class="text">Avenida Falsa 2235, Ciudad Esmeralda, Argentina</span></li>
 					                <li><span class="text">+2 392 3929 210</span></a></li>
 					              </ul>
                       </td>
@@ -395,13 +395,7 @@ ul.social li{
             </table>
           </td>
         </tr><!-- end: tr -->
-        <tr>
-          <td class="bg_light" style="text-align: center;">
-          	<p>No longer want to receive these email? You can <a href="#" style="color: rgba(0,0,0,.8);">Unsubscribe here</a></p>
-          </td>
-        </tr>
       </table>
-
     </div>
   </center>
 </body>
