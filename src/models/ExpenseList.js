@@ -32,6 +32,10 @@ const expenseListSchema = mongoose.Schema({
         required: true,
         ref: "User",
         unique: true
+    },
+
+    totalLimit: {
+        type: Number,
     }
 
   },

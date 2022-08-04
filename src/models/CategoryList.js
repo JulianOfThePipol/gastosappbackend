@@ -13,6 +13,10 @@ const categoryListSchema = mongoose.Schema({
                 type: String,
                 required: true,
                 trim: true 
+            },
+
+            categoryLimit: {
+                type: Number,
             }
         },
     ],

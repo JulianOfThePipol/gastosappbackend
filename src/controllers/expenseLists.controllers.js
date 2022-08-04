@@ -265,10 +265,42 @@ const getExpensesPerMonth = async (req, res) => { //Para pedir el listado de cat
     }
 }
 
+const addTotalLimit = async (req, res) => { //Para pedir el listado de gastos. Este controller es solo para QA/Development. No usar en el frontend.
+    const {user} = req //Este user viene dado por el checkAuth
+    const {totalLimit} = req.body
+    if (!totalLimit || isNaN(parseInt(totalLimit))){
+        res.status(400).json({ msg: "Debe colocar un limite numérico" , error: true})
+    } else {
+        const expenseList = await ExpenseList.findOne({userID: user._id}) //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
+        if (!expenseList){
+            res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
+        } else {
+            expenseList.totalLimit = parseInt(totalLimit)
+            try { 
+                await expenseList.save(); //Guardamos el listado
+                res.status(201).json({msg: "Limite agregado exitosamente"}); //Le puse un 201 en vez de un 204 para poder mandar un json de respuesta, personalmente prefiero ver que reciba algo
+            } catch (error) {
+                return res.status(409).json({msg: `Ocurrió un error: ${error}` , error: true});
+            }
+        }
+    }
+}
+
+
+const getTotalLimit = async (req, res) => { //Para pedir el listado de gastos. Este controller es solo para QA/Development. No usar en el frontend.
+    const {user} = req //Este user viene dado por el checkAuth
+    const expenseList = await ExpenseList.findOne({userID: user._id}).select("-_id -expenses") //Buscamos la expenseList del usuario, y le sacamos la info que no nos sirve
+    if (!expenseList){
+        res.status(400).json({ msg: "Listado de gastos no encontrado" , error:true})
+    } else {
+        res.status(200).json({totalLimit:expenseList.totalLimit})
+    }
+}
 
 
 
-export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense, getTotalExpenses, getExpensesPerMonth}
+
+export {getExpenseList, addExpense, removeExpense, changeExpense, searchExpense, getTotalExpenses, getExpensesPerMonth, addTotalLimit, getTotalLimit }
 
 
 

@@ -107,4 +107,45 @@ const changeCategory = async (req, res) => {
     }
 }
 
-export { getCategoryList, addCategory, removeCategory, changeCategory }
+
+
+const addCategoryLimit = async (req, res) => {
+    const {user} = req
+    const { categoryName, categoryLimit } = req.body
+    if (!categoryLimit || isNaN(parseInt(categoryLimit))){
+        res.status(400).json({ msg: "Debe colocar un limite numérico" , error: true})
+    }
+    const categoryList = await CategoryList.findOne({userID: user._id})
+    if (!categoryList){
+        res.status(400).json({ msg: "Listado de categorias no encontrado" , error: true})
+    }
+    const categoryExists = categoryList.categories.findIndex(category => category.name === categoryName); //Aca nos aseguramos que la categoria exista, y extraemos su index
+    if(categoryExists !== -1){
+        categoryList.categories[categoryExists].categoryLimit = parseInt(categoryLimit)
+        try { 
+            await categoryList.save(); //Guardamos el listado
+            res.status(201).json({msg: "Limite agregado exitosamente"}); //Le puse un 201 en vez de un 204 para poder mandar un json de respuesta, personalmente prefiero ver que reciba algo
+        } catch (error) {
+            return res.status(409).json({msg: `Ocurrió un error: ${error}` , error: true});
+        }
+    } else {
+        return res.status(400).json({msg:"La categoria no existe" , error: true});
+    }
+}
+
+const getCategoryLimit = async (req, res) => {
+    const {user} = req
+    const { categoryName } = req.query
+    const categoryList = await CategoryList.findOne({userID: user._id})
+    if (!categoryList){
+        res.status(400).json({ msg: "Listado de categorias no encontrado" , error: true})
+    }
+    const categoryExists = categoryList.categories.findIndex(category => category.name === categoryName); //Aca nos aseguramos que la categoria exista, y extraemos su index
+    if(categoryExists !== -1){
+        res.status(200).json({totalCategoryLimit: categoryList.categories[categoryExists].categoryLimit, categoryName:categoryList.categories[categoryExists].name })
+    } else {
+        return res.status(400).json({msg:"La categoria no existe" , error: true});
+    }
+}
+
+export { getCategoryList, addCategory, removeCategory, changeCategory, addCategoryLimit, getCategoryLimit }

@@ -198,4 +198,8 @@ const changeProfile = async (req, res) =>{
 }
 
 
+
+
+
+
 export {createNewUser, authenticate, confirmUser, forgotPassword, checkForgotToken, changeForgotPassword, userProfile, changeProfile}
