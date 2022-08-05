@@ -5,8 +5,7 @@ const getCategoryList = async (req, res) => { //Para pedir el listado de categor
     const categoryList = await CategoryList.findOne({userID: user._id}).select("categories -_id") //Buscamos la categoryList del usuario, y le sacamos la info que no nos sirve
     if (!categoryList){
         res.status(400).json({ msg:"Listado de categorias no encontrado", error: true})
-    }
-    res.json(categoryList)
+    } else { res.json(categoryList) }
 }
 
 const addCategory = async (req, res) => {
