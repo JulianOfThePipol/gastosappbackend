@@ -418,6 +418,7 @@ export const emailToken = async (user) => {
 
 export const emailForgot = async (user) => {
   const { email, name, tokenForgot } = user;
+
   const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
     from: '"Ahorrar+ - Cuentas de usuario" <CuentasAhorrar@outlook.com>',
