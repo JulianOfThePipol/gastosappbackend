@@ -3,7 +3,6 @@ import jwt  from "jsonwebtoken";
 
 export default async function checkAuth (req, res, next) {
     let token
-    console.log(process.env.PASS_MAILTRAP);
     if( req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ){ //Checkeamos que traiga alguna autorización
         try{
             token = req.headers.authorization.split(" ")[1]; //sacamos el token
