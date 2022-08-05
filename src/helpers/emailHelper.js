@@ -2,7 +2,8 @@ import nodemailer from "nodemailer";
 import { transportVar1 } from "./transportVar.js";
 
 
-const emailTemplateConfirmed = (name, token) => `<!DOCTYPE html>
+const emailTemplateConfirmed = (name, token) => 
+`<!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -17,8 +18,6 @@ const emailTemplateConfirmed = (name, token) => `<!DOCTYPE html>
     <!-- CSS Reset : BEGIN -->
     <style>
 
-        /* What it does: Remove spaces around the email design added by some email clients. */
-        /* Beware: It can remove the padding / margin and add a background color to the compose a reply window. */
         html,
 body {
     margin: 0 auto !important;
@@ -28,25 +27,21 @@ body {
     background: #f1f1f1;
 }
 
-/* What it does: Stops email clients resizing small text. */
 * {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
 }
 
-/* What it does: Centers email on Android 4.4 */
 div[style*="margin: 16px 0"] {
     margin: 0 !important;
 }
 
-/* What it does: Stops Outlook from adding extra spacing to tables. */
 table,
 td {
     mso-table-lspace: 0pt !important;
     mso-table-rspace: 0pt !important;
 }
 
-/* What it does: Fixes webkit padding issue. */
 table {
     border-spacing: 0 !important;
     border-collapse: collapse !important;
@@ -54,17 +49,14 @@ table {
     margin: 0 auto !important;
 }
 
-/* What it does: Uses a better rendering method when resizing images in IE. */
 img {
     -ms-interpolation-mode:bicubic;
 }
 
-/* What it does: Prevents Windows 10 Mail from underlining links despite inline CSS. Styles for underlined links should be inline. */
 a {
     text-decoration: none;
 }
 
-/* What it does: A work-around for email clients meddling in triggered links. */
 *[x-apple-data-detectors],  /* iOS */
 .unstyle-auto-detected-links *,
 .aBn {
@@ -78,26 +70,19 @@ a {
     line-height: inherit !important;
 }
 
-/* What it does: Prevents Gmail from displaying a download button on large, non-linked images. */
 .a6S {
     display: none !important;
     opacity: 0.01 !important;
 }
 
-/* What it does: Prevents Gmail from changing the text color in conversation threads. */
 .im {
     color: inherit !important;
 }
 
-/* If the above doesn't work, add a .g-img class to any image in question. */
 img.g-img + div {
     display: none !important;
 }
 
-/* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */
-/* Create one of these media queries for each additional viewport size you'd like to fix */
-
-/* iPhone 4, 4S, 5, 5S, 5C, and 5SE */
 @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
     u ~ div .email-container {
         min-width: 320px !important;
@@ -120,7 +105,7 @@ img.g-img + div {
 
     <!-- CSS Reset : END -->
 
-    <!-- Progressive Enhancements : BEGIN -->
+
     <style>
 
 	    .primary{
@@ -373,7 +358,6 @@ ul.social li{
                     <tr>
                       <td style="text-align: left; padding-right: 10px;">
                       	<h3 class="heading">About</h3>
-                      	<p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
                       </td>
                     </tr>
                   </table>
@@ -382,10 +366,10 @@ ul.social li{
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                     <tr>
                       <td style="text-align: left; padding-left: 5px; padding-right: 5px;">
-                      	<h3 class="heading">Contact Info</h3>
+                      	<h3 class="heading">Contacto</h3>
                       	<ul>
 					                <li><span class="text">Avenida Falsa 2235, Ciudad Esmeralda, Argentina</span></li>
-					                <li><span class="text">+2 392 3929 210</span></a></li>
+					                <li><span class="text">+2 666 3929 210</span></a></li>
 					              </ul>
                       </td>
                     </tr>
@@ -422,10 +406,10 @@ export const emailToken = async (user) => {
   const { email, name, tokenConfirm } = user;
   const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
-    from: '"APP GASTOS - Cuentas de usuario" <prueba@APPGASTOS.com>', //CAMBIAR NOMBRE !!!
+    from: '"Ahorrar+ - Cuentas de usuario" <CuentasAhorrar@outlook.com>',
     to: email,
-    subject: "APP GASTOS - Confirma tu cuenta", //CAMBIAR NOMBRE !!!
-    text: "Confirma tu cuenta de APP GASTOS", //CAMBIAR NOMBRE !!!
+    subject: "Ahorrar+ - Confirma tu cuenta", 
+    text: "Confirma tu cuenta de Ahorrar+", 
 
     html: emailTemplateConfirmed(name, tokenConfirm)
   });
@@ -435,9 +419,9 @@ export const emailForgot = async (user) => {
   const { email, name, tokenForgot } = user;
   const transport = nodemailer.createTransport(transportVar1(process.env.USER_MAILTRAP,process.env.PASS_MAILTRAP));
   const info = await transport.sendMail({
-    from: '"APP GASTOS - Cuentas de usuario" <prueba@APPGASTOS.com>', //CAMBIAR NOMBRE !!!
+    from: '"Ahorrar+ - Cuentas de usuario" <CuentasAhorrar@outlook.com>',
     to: email,
-    subject: "APP GASTOS - Reestablecer Contraseña", //CAMBIAR NOMBRE !!!
+    subject: "Ahorrar+ - Reestablecer Contraseña", 
     text: "Por favor, cambie su contraseñá",
     html: emailTemplateForgot(name, tokenForgot)
   });
