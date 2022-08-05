@@ -339,7 +339,8 @@ ul.social li{
             		<td>
             			<div class="text" style="padding: 0 2.5em; text-align: center;">
                   <p>Hola ${name}, te enviamos este email para confirmar tu cuenta</p>
-            				<button><a href="https://gastos-app-develop.vercel.app/confirmed/${token}"> Por favor, clickea aquí </a></button>
+            				<button class="btn btn-primary"><a href="https://gastos-app-prod.vercel.app/confirmed/${token}"> Por favor, clickea aquí </a></button>
+                    <p>Si no podes clickear el botón superior, ingresa al siguiente link: https://gastos-app-prod.vercel.app/confirmed/${token}</p>
             			</div>
             		</td>
             	</tr>
@@ -396,7 +397,7 @@ const emailTemplateForgot = (name, token) => `<!DOCTYPE html>
   </head>
   <body>
     <p>Hola ${name}, te enviamos este email para reestablecer tu contraseña</p>
-    <button><a href="https://gastos-app-develop.vercel.app/forgot/${token}"> Por favor, clickea aquí </a></button>
+    <button><a href="https://gastos-app-prod.vercel.app/forgot/${token}"> Por favor, clickea aquí </a></button>
     <p> Si no olvidaste tu contraseña, podes ignorar este email </p>
    
   </body>
