@@ -1,38 +1,30 @@
+import * as dotenv from 'dotenv'
 import express from "express";
 import conectarDb from "./src/config/db.js";
-import dotenv from "dotenv";
 import cors from "cors";
-import userRouter from "./src/routes/user.routes.js";
+import {userRouter, categoryListRouter, expenseListRouter} from './src/routes/index.js';
 
 
-const app = express();
 
 dotenv.config({ path: "./.env" });
+
+const app = express();
 
 app.use(express.json());
 
 conectarDb();
 
-const whiteList = ["http://localhost:3000"];
-
 const corsOption = {
     origin: function (origin, callback) {
-      /* console.log(origin);
-      if (whiteList.includes(origin)) { */
-        // Puede consultar la api
         callback(null, true);
-  /*     } else {
-        callback(new Error("Error de Cors"));
-      } */
     }
   };
   
   app.use(cors(corsOption));
 
   app.use("/api/user", userRouter);
+  app.use("/api/categories", categoryListRouter);
+  app.use("/api/expenses", expenseListRouter)
 
-  app.set("port", 4000); 
-
-  app.listen(app.get("port"), () => {
-    console.log(`Server on port ${app.get("port")}`);
-  });
+  const port = process.env.PORT || 4000;
+  app.listen(port);
