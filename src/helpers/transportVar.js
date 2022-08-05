@@ -12,7 +12,8 @@ const transportVar2 = (user, pass) =>{
 
 
 const transportVar1 = (user, pass) =>  {//Este son los datos para hacer la conexión con el outlook, habria que crear una cuenta para usarlo.
-    return {host: "smtp.office365.com", // hostname
+    return {
+    host: "smtp.office365.com", // hostname
     secureConnection: false, // TLS requires secureConnection to be false
     port: 587, // port for secure SMTP
     tls: {
